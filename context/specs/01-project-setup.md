@@ -52,10 +52,10 @@ Nothing (first unit — see `context/specs/00-build-plan.md`).
 - [x] `npm run build` (production) succeeds
 - [x] All 8 color tokens from `ui-context.md` present in `app/globals.css`'s `@theme` block, no raw hex values in any component
 - [x] Empty page renders at `/` locally (verified 200 response)
-- [ ] Repo pushed to GitHub — **blocked: no GitHub/Vercel auth in the build sandbox; user is connecting these themselves**
-- [ ] Vercel deployment succeeds and the live URL renders the empty page — **same blocker**
+- [x] Repo pushed to GitHub
+- [x] Vercel deployment succeeds and the live URL renders the empty page — live at https://beca-self.vercel.app/
 - [x] No invariant in `architecture.md` or `code-standards.md` violated
-- [x] `progress-tracker.md` updated: Spec 01 marked in-progress/blocked pending deploy handoff
+- [x] `progress-tracker.md` updated: Spec 01 marked complete, Spec 02 marked in progress
 
 ## Docs to update after this spec
 

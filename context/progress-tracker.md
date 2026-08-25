@@ -4,30 +4,32 @@ Update this file after every spec implementation.
 
 ## Current Phase
 
-Phase 0 — Project structure and context system (this setup).
+Phase 1 — Backend foundation (Supabase schema, KB ingestion, directory seed).
 
 ## Current Goal
 
-Get the repo scaffolded, context files finalized, and an empty shell deployed to a live URL — the H2–4 "done" criteria from the 24-hour execution plan.
+Stand up the Supabase schema per `database-schema.md`: all tables, pgvector extension, `match_kb_chunks` function, RLS policies — Spec 02's scope.
 
 ## Completed
 
 - H0–2: scope locked (`SCOPE.md`), KB topic list finalized, directory seed drafted.
 - Project structure and context-file system defined (this file set).
+- Spec 01: Project setup & deploy shell (see `context/specs/01-project-setup.md`) — Next.js/TypeScript/Tailwind v4/shadcn scaffold, color tokens wired into `app/globals.css`, empty page. Deployed live: **https://beca-self.vercel.app/**. H2–4 "done" criteria met.
 
 ## In Progress
 
-- Spec 01: Project setup & deploy shell (see `context/specs/01-project-setup.md`) — code complete and locally verified (clean `tsc`, `lint`, `build`, `dev`); blocked only on the live Vercel deploy step, which needs GitHub/Vercel account auth the build sandbox doesn't have. User is pushing to GitHub and connecting Vercel themselves.
+- Spec 02: Supabase schema & migration (see `context/database-schema.md`, `context/specs/00-build-plan.md` unit 02)
 
 ## Next Up
 
-- Spec 02: Supabase schema + migration
 - Spec 03: KB ingestion script
+- Spec 04: Directory seed load
 
 ## Open Questions
 
 - Which real Lagos neighbourhood/PHC to use for `clinic_directory.json` entries #5, #6, #7, #10 — currently placeholders.
 - Whether the Lagos/Nigeria emergency number is verified — not yet confirmed, see `SCOPE.md`.
+- `.gitignore`'s blanket `.env*` pattern also excludes `.env.example`, so it's never committed to the repo. Surfaced during Spec 01 but out of that spec's scope to fix. Needs a decision before Spec 02–03 land Supabase/Anthropic env vars: either add a `!.env.example` negation line, or accept documenting required env vars elsewhere (e.g. `architecture.md`).
 
 ## Architecture Decisions
 
