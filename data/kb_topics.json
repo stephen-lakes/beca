@@ -1,0 +1,110 @@
+[
+  {
+    "id": 1,
+    "title": "Malaria — prevention and when to seek care",
+    "category": "disease-prevention",
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/malaria",
+    "red_flag_linked": true,
+    "notes": "Pair with red-flag rules for persistent fever, especially in a child — strong candidate for the live escalation demo."
+  },
+  {
+    "id": 2,
+    "title": "Maternal health — risks and warning signs in pregnancy",
+    "category": "maternal-care",
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/maternal-mortality",
+    "red_flag_linked": true,
+    "notes": "Primary source for the optional maternal-persona escalation example."
+  },
+  {
+    "id": 3,
+    "title": "Vaccines and immunization — why they matter and general schedules",
+    "category": "vaccination",
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/immunization-coverage",
+    "red_flag_linked": false,
+    "notes": "A Nigeria-specific NPHCDA schedule is a stretch add-on, not required for the MVP."
+  },
+  {
+    "id": 4,
+    "title": "Malnutrition — recognizing and preventing it in children",
+    "category": "nutrition",
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/malnutrition",
+    "red_flag_linked": false,
+    "notes": ""
+  },
+  {
+    "id": 5,
+    "title": "Infant and young child feeding",
+    "category": "nutrition",
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/infant-and-young-child-feeding",
+    "red_flag_linked": false,
+    "notes": ""
+  },
+  {
+    "id": 6,
+    "title": "Healthy diet for adults",
+    "category": "nutrition",
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/healthy-diet",
+    "red_flag_linked": false,
+    "notes": ""
+  },
+  {
+    "id": 7,
+    "title": "Sanitation and basic hygiene practices",
+    "category": "hygiene",
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/sanitation",
+    "red_flag_linked": false,
+    "notes": ""
+  },
+  {
+    "id": 8,
+    "title": "Safe drinking water",
+    "category": "hygiene",
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/drinking-water",
+    "red_flag_linked": false,
+    "notes": ""
+  },
+  {
+    "id": 9,
+    "title": "Family planning and contraception methods",
+    "category": "family-planning",
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/family-planning-contraception",
+    "red_flag_linked": false,
+    "notes": ""
+  },
+  {
+    "id": 10,
+    "title": "Mental health and wellbeing — the basics",
+    "category": "mental-health",
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/mental-health-strengthening-our-response",
+    "red_flag_linked": true,
+    "notes": "Pair with red-flag rules for crisis/self-harm language — escalate to a human resource, not more chat."
+  },
+  {
+    "id": 11,
+    "title": "Diarrhoeal disease in children — home care vs. when to seek help",
+    "category": "child-health",
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/diarrhoeal-disease",
+    "red_flag_linked": true,
+    "notes": "Pairs naturally with the dehydration escalation example in the demo script."
+  },
+  {
+    "id": 12,
+    "title": "How to prepare for a clinic or hospital appointment",
+    "category": "service-navigation",
+    "source_name": "internally authored",
+    "source_url": null,
+    "red_flag_linked": false,
+    "notes": "Not from an external source — write this ourselves as a short checklist and label it clearly as team-authored in the UI, not a cited external fact."
+  }
+]

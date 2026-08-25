@@ -1,0 +1,98 @@
+[
+  {
+    "id": 1,
+    "category": "emergency",
+    "name": "Lagos State emergency / ambulance service",
+    "area": "Lagos-wide",
+    "contact": "VERIFY — see https://lagosstate.gov.ng/emergency-numbers/ or LASEMA https://lasema.lagosstate.gov.ng/contact-us-2/",
+    "verified": false
+  },
+  {
+    "id": 2,
+    "category": "emergency",
+    "name": "Nigeria unified emergency number (commonly cited as 112)",
+    "area": "National",
+    "contact": "VERIFY current/active status before putting this on screen",
+    "verified": false
+  },
+  {
+    "id": 3,
+    "category": "general-tertiary",
+    "name": "Lagos State University Teaching Hospital (LASUTH)",
+    "area": "Ikeja",
+    "contact": "Facility name is real and well-known — VERIFY current phone/address before demo",
+    "verified": "name-only"
+  },
+  {
+    "id": 4,
+    "category": "general-tertiary",
+    "name": "General Hospital Lagos",
+    "area": "Lagos Island",
+    "contact": "Facility name is real and well-known — VERIFY current phone/address before demo",
+    "verified": "name-only"
+  },
+  {
+    "id": 5,
+    "category": "primary-care",
+    "name": "[Nearest Lagos State Primary Health Centre to your chosen demo neighbourhood]",
+    "area": "Pick one: Mushin / Ajegunle / Yaba / other",
+    "contact": "FILL IN — search \"Lagos State PHC [area]\"",
+    "verified": false
+  },
+  {
+    "id": 6,
+    "category": "maternal-care",
+    "name": "Antenatal clinic — same PHC as #5, or LASUTH/General Hospital maternity ward",
+    "area": "Same as chosen PHC",
+    "contact": "FILL IN",
+    "verified": false
+  },
+  {
+    "id": 7,
+    "category": "child-health",
+    "name": "Immunization clinic — same PHC as #5 (routine immunization is typically PHC-based in Nigeria)",
+    "area": "Same as chosen PHC",
+    "contact": "FILL IN",
+    "verified": false
+  },
+  {
+    "id": 8,
+    "category": "mental-health",
+    "name": "Federal Neuro-Psychiatric Hospital, Yaba",
+    "area": "Yaba",
+    "contact": "Facility is real (fnphyaba.gov.ng) — VERIFY current phone number before demo",
+    "verified": "name-only"
+  },
+  {
+    "id": 9,
+    "category": "family-planning",
+    "name": "Marie Stopes Nigeria — Lagos clinic",
+    "area": "Lagos (confirm nearest branch)",
+    "contact": "Organisation is real (mariestopes.org.ng) — VERIFY nearest branch + phone",
+    "verified": "name-only"
+  },
+  {
+    "id": 10,
+    "category": "malaria-treatment",
+    "name": "Same PHC as #5 (first-line malaria testing/treatment is typically PHC-based)",
+    "area": "Same as chosen PHC",
+    "contact": "FILL IN",
+    "verified": false
+  },
+  {
+    "id": 11,
+    "category": "general",
+    "name": "[Add 1–2 real pharmacies or clinics you personally know near the demo neighbourhood]",
+    "area": "TBD",
+    "contact": "FILL IN",
+    "verified": false
+  },
+  {
+    "id": 12,
+    "category": "disclaimer",
+    "name": "Directory scope note",
+    "area": "n/a",
+    "contact": "This is a 12-entry hackathon-scale seed, not a comprehensive map — say so plainly in the pitch, don't imply full coverage.",
+    "verified": "n/a"
+  }
+]

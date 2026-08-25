@@ -1,3 +1,9 @@
+# Agent Context — Alias
+
+This file exists only so any agent that looks for `AGENTS.md` instead of `CLAUDE.md` finds the same instructions rather than starting from zero.
+
+Read [`CLAUDE.md`](./CLAUDE.md) and follow it exactly. Do not maintain separate content here — if the read order or rules ever change, edit `CLAUDE.md` only.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
