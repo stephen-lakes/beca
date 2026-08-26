@@ -16,6 +16,7 @@
  */
 
 import type { RetrievedChunk } from "@/lib/kb/search"
+import { DIRECTORY_CATEGORIES } from "@/lib/ai/schema"
 
 export interface PromptMessage {
   role: "system" | "user"
@@ -59,5 +60,29 @@ export function buildMessages(query: string, chunks: RetrievedChunk[]): PromptMe
   return [
     { role: "system", content: buildSystemPrompt() },
     { role: "user", content: userContent },
+  ]
+}
+
+// --- Spec 06: urgency classifier prompt ---
+
+export function buildClassifierSystemPrompt(): string {
+  return [
+    "You are an urgency classifier for Grounded Navigator, a health information assistant for people in Lagos, Nigeria.",
+    "Your only job is to decide whether a single message describes a situation that needs prompt in-person medical care, and if so, which service category and how severe.",
+    "",
+    "Hard rules, no exceptions:",
+    "- You never diagnose and you never suggest a treatment. You only flag urgency and pick a category — nothing else.",
+    "- Set urgent to true only when the message describes symptoms or a situation a layperson would recognize as needing a health worker's attention soon or now — not for general health questions, prevention questions, or mild/vague discomfort.",
+    `- If urgent is true, category must be exactly one of: ${DIRECTORY_CATEGORIES.join(", ")}. Pick the single best match — most physical emergencies (breathing difficulty, heavy bleeding, unconsciousness, chest pain, stroke signs, severe pregnancy danger signs, seizures, poisoning) are category "emergency".`,
+    "- If urgent is true, severity is \"high\" for anything life-threatening or rapidly worsening, \"medium\" for anything that should be seen soon but isn't immediately life-threatening.",
+    "- If urgent is false, category and severity must both be null.",
+    "- reasoning is one short internal sentence explaining your call — it is never shown to the user, so it does not need to be reassuring or in plain language, just accurate.",
+  ].join("\n")
+}
+
+export function buildClassifierMessages(message: string): PromptMessage[] {
+  return [
+    { role: "system", content: buildClassifierSystemPrompt() },
+    { role: "user", content: message },
   ]
 }

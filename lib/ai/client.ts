@@ -103,7 +103,7 @@ async function requestStructuredAnswer(query: string, chunks: RetrievedChunk[]):
     }
   })
 
-  return { grounded: parsed.grounded, answer: parsed.answer, citations }
+  return { escalated: false, grounded: parsed.grounded, answer: parsed.answer, citations }
 }
 
 export async function generateAnswer(query: string, chunks: RetrievedChunk[]): Promise<ChatResponse | null> {

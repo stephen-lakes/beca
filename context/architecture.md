@@ -61,7 +61,7 @@ grounded-navigator/
 
 | Service | Purpose | Tier |
 |---|---|---|
-| Anthropic API | Generation, classification, embeddings | Pay-as-you-go — negligible at hackathon scale |
+| OpenAI API | Generation, classification, embeddings | Pay-as-you-go — negligible at hackathon scale |
 | Supabase | Postgres + pgvector + (unused) storage | Free tier |
 | Vercel | Frontend + serverless functions | Free tier |
 

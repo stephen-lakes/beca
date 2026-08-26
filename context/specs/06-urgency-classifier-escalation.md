@@ -87,22 +87,26 @@ Carried forward from `progress-tracker.md`'s Open Questions and flagged inline o
 
 ## New dependencies
 
-None. Same SDKs as Spec 05 (`@anthropic-ai/sdk`, `@supabase/supabase-js`, `zod`) — no new package needed for keyword matching or the classifier call.
+None. Same SDKs as Spec 05 (`openai`, `@supabase/supabase-js`, `zod`) — no new package needed for keyword matching or the classifier call.
 
-## Status: NOT STARTED
+## Status: IMPLEMENTED AND FULLY VERIFIED LIVE
+
+All six files written/modified as scoped. Verified against a real Supabase project and a real `OPENAI_API_KEY` — no mocking. One live-verification technique worth recording: Decision 8's classifier-failure degrade path was exercised for real (not just code-reviewed) by restarting the dev server with `OPENAI_API_KEY` overridden to an invalid value via shell env (which Next.js's env-loading precedence puts above `.env.local` without touching that file) — the classifier genuinely 401'd, retried once, returned `null`, logged `classifyUrgency failed after retry`, and the route still returned a correct `HTTP 200` escalation from the deterministic check alone.
+
+A second, unplanned but useful result surfaced during verification: a paraphrased stroke-symptom message ("cannot speak properly", "droopy") that does **not** literally substring-match any of the 67 `red_flag_rules.pattern` values (the nearest are "sudden slurred or garbled speech" / "sudden drooping on one side of the face" — different wording) still triggered `escalated: true` — real evidence the AI classifier is catching paraphrased cases independently of the deterministic net, not just duplicating it.
 
 ## Verify checklist
 
-- [ ] `lib/ai/schema.ts`, `lib/ai/prompts.ts`, `lib/ai/classify.ts`, `lib/directory/lookup.ts`, `app/api/services/route.ts`, `app/api/chat/route.ts` written/modified
-- [ ] `npx tsc --noEmit` clean, `npm run lint` clean, `npm run dev` starts cleanly
-- [ ] Exact-phrase red flag → `escalated: true` with correct category/severity and traceable `matched_entries`, verified live via curl
-- [ ] `category: 'emergency'` returns both live directory rows in `matched_entries`
-- [ ] Non-urgent in-KB question still returns the unchanged Spec 05 grounded-answer shape, now with `escalated: false`
-- [ ] `GET /api/services` verified for a valid category, an invalid category (400), and a missing category (400)
-- [ ] Deterministic check confirmed to work independent of the AI classifier (Decision 8's degrade path exercised, not just code-reviewed)
-- [ ] No `SELECT *` anywhere; no Supabase import outside `lib/kb/`, `lib/directory/`, `app/api/*`
-- [ ] No invariant in `architecture.md` or `code-standards.md` violated — in particular hard invariant 2 (no diagnosis/treatment plan — verify the escalation path never calls `generateAnswer`)
-- [ ] `progress-tracker.md` updated: Spec 06 marked complete or left in progress per actual verification results; the mental-health open question marked resolved (link back to this spec); combining-logic and classifier-fallback decisions logged under Architecture Decisions
+- [x] `lib/ai/schema.ts`, `lib/ai/prompts.ts`, `lib/ai/classify.ts`, `lib/directory/lookup.ts`, `app/api/services/route.ts`, `app/api/chat/route.ts` written/modified
+- [x] `npx tsc --noEmit` clean, `npm run lint` clean, `npm run dev` starts cleanly
+- [x] Exact-phrase red flag → `escalated: true` with correct category/severity and traceable `matched_entries`, verified live via curl (tested with a seizure phrase → `category: emergency, severity: high`, and a self-harm phrase → `category: mental-health, severity: high`)
+- [x] `category: 'emergency'` returns both live directory rows in `matched_entries` — verified directly via curl and via `GET /api/services?category=emergency`
+- [x] Non-urgent in-KB question still returns the unchanged Spec 05 grounded-answer shape, now with `escalated: false` — verified live with a malaria-prevention question, real citation intact
+- [x] `GET /api/services` verified for a valid category (`mental-health` → 1 entry), an invalid category (400), and a missing category (400)
+- [x] Deterministic check confirmed to work independent of the AI classifier — Decision 8's degrade path exercised live (broken-key restart), not just code-reviewed; see Status above
+- [x] No `SELECT *` anywhere; no Supabase import outside `lib/kb/`, `lib/directory/`, `app/api/*` — `lib/ai/classify.ts` only imports `openai`, confirmed by inspection
+- [x] No invariant in `architecture.md` or `code-standards.md` violated — in particular hard invariant 2: the escalation branch returns before `searchKb`/`generateAnswer` are ever called, confirmed both by code structure and by the fact that the broken-OpenAI-key test still succeeded on the escalation path (proof no OpenAI generation call happened on that path)
+- [x] `progress-tracker.md` updated: Spec 06 marked complete, mental-health open question already resolved and linked, combining-logic and classifier-fallback decisions logged under Architecture Decisions
 
 ## Docs to update after this spec
 
