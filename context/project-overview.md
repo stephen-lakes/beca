@@ -1,6 +1,6 @@
 # Project Overview
 
-Grounded Navigator is a chat-based AI assistant that answers general health and health-service questions for people in Lagos, Nigeria, in plain language and Nigerian Pidgin, grounded in WHO fact sheets with visible citations — and that reliably escalates to a real clinic, service, or emergency referral when a question goes beyond general information. Built for Track 4 (AI for Social Impact), HealthAccess Initiative case study, 10AB AI BuildFest 2026.
+Beca is a chat-based AI assistant that answers general health and health-service questions for people in Lagos, Nigeria, in plain language and Nigerian Pidgin, grounded in WHO fact sheets with visible citations — and that reliably escalates to a real clinic, service, or emergency referral when a question goes beyond general information. Built for Track 4 (AI for Social Impact), HealthAccess Initiative case study, 10AB AI BuildFest 2026.
 
 ## Goals (measurable)
 

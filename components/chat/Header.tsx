@@ -10,7 +10,7 @@
 export function Header() {
   return (
     <header className="border-b border-line px-4 py-3">
-      <p className="text-sm font-semibold tracking-wide text-ink">Grounded Navigator</p>
+      <p className="text-sm font-semibold tracking-wide text-ink">Beca</p>
     </header>
   )
 }

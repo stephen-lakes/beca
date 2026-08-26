@@ -10,12 +10,12 @@
   },
   {
     "id": 2,
-    "title": "Maternal health — risks and warning signs in pregnancy",
+    "title": "Pre-eclampsia — warning signs during pregnancy",
     "category": "maternal-care",
     "source_name": "WHO",
-    "source_url": "https://www.who.int/news-room/fact-sheets/detail/maternal-mortality",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/pre-eclampsia",
     "red_flag_linked": true,
-    "notes": "Primary source for the optional maternal-persona escalation example."
+    "notes": "Swapped from the maternal-mortality fact sheet (population statistics, not danger signs — see Spec 11's test-set investigation, progress-tracker.md) to WHO's pre-eclampsia fact sheet, confirmed to contain real pregnancy danger signs: severe headache, visual disturbances, upper abdominal pain, swelling, seizures. Primary source for the optional maternal-persona escalation example."
   },
   {
     "id": 3,
@@ -64,12 +64,12 @@
   },
   {
     "id": 8,
-    "title": "Safe drinking water",
+    "title": "Safe drinking water — how to treat and store water at home",
     "category": "hygiene",
-    "source_name": "WHO",
-    "source_url": "https://www.who.int/news-room/fact-sheets/detail/drinking-water",
+    "source_name": "internally authored — compiled from WHO & CDC guidance",
+    "source_url": null,
     "red_flag_linked": false,
-    "notes": ""
+    "notes": "WHO's own drinking-water fact sheet is stats/policy-focused, not a household how-to (verified directly). This entry is compiled from CDC's household water treatment guidance and WHO's Household Water Treatment and Safe Storage program page — see https://www.cdc.gov/water-emergency/about/index.html and https://www.who.int/teams/environment-climate-change-and-health/water-sanitation-and-health/water-safety-and-quality/household-water-treatment-and-safe-storage. Not from a single WHO fact sheet — label accordingly in the UI, same as topic #12's team-authored disclosure."
   },
   {
     "id": 9,

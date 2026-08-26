@@ -1,4 +1,4 @@
-# Build Plan — Grounded Navigator
+# Build Plan — Beca
 
 Generated before implementation begins. Units are in dependency order. Each unit stays within one system boundary and produces one visible, verifiable result. Individual spec files (`01-*.md`, `02-*.md`, ...) are generated just-in-time, right before each unit is implemented — not written in advance.
 

@@ -18,7 +18,7 @@
 ## Folder structure
 
 ```
-grounded-navigator/
+beca/
 ├── CLAUDE.md / AGENTS.md / README.md
 ├── context/                    # this file and its siblings — the agent context system
 │   └── specs/                  # 00-build-plan.md + one file per buildable unit

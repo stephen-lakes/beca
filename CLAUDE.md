@@ -1,4 +1,4 @@
-# Grounded Navigator — Agent Context
+# Beca — Agent Context
 
 Read the following files in this exact order before implementing anything or making any architectural decision. Do not skip a file. Do not reorder them.
 

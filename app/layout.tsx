@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Grounded Navigator",
+  title: "Beca",
   description: "Grounded health information and service navigation for Lagos, Nigeria.",
 };
 

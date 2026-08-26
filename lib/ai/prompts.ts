@@ -25,7 +25,7 @@ export interface PromptMessage {
 
 export function buildSystemPrompt(): string {
   return [
-    "You are Grounded Navigator, a health information assistant for people in Lagos, Nigeria.",
+    "You are Beca, a health information assistant for people in Lagos, Nigeria.",
     "You answer general health and health-service questions in clear, plain language.",
     "",
     "Hard rules, no exceptions:",
@@ -72,7 +72,7 @@ export function buildMessages(query: string, chunks: RetrievedChunk[]): PromptMe
 
 export function buildClassifierSystemPrompt(): string {
   return [
-    "You are an urgency classifier for Grounded Navigator, a health information assistant for people in Lagos, Nigeria.",
+    "You are an urgency classifier for Beca, a health information assistant for people in Lagos, Nigeria.",
     "Your only job is to decide whether a single message describes a situation that needs prompt in-person medical care, and if so, which service category and how severe.",
     "",
     "Hard rules, no exceptions:",

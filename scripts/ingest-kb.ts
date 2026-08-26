@@ -80,12 +80,42 @@ type KbTopic = z.infer<typeof KbTopicSchema>
 
 const KbTopicsFileSchema = z.array(KbTopicSchema)
 
-// Content for topic #12 ("How to prepare for a clinic or hospital
-// appointment") — internally authored, source_url is null, nothing to
-// fetch. Per kb_topics.json's note: "write this ourselves as a short
-// checklist and label it clearly as team-authored in the UI, not a cited
-// external fact" (the UI-side labeling is a later spec's job, not this one).
+// Content for topics #8 and #12 — internally authored, source_url is null,
+// nothing to fetch. Per kb_topics.json's notes: label clearly as
+// team-authored/compiled in the UI, not a cited external fact (the UI-side
+// labeling is a later spec's job, not this one).
+//
+// Topic #8 ("Safe drinking water — how to treat and store water at home")
+// was added here during the post-Spec-11 content-gap fix: WHO's own
+// drinking-water fact sheet is stats/policy-focused, not a household
+// how-to (confirmed directly — see progress-tracker.md). Compiled from CDC
+// household water treatment guidance and WHO's Household Water Treatment
+// and Safe Storage program page (both cited in kb_topics.json's notes for
+// this entry), not fetched live — same internally-authored pattern as #12.
 const INTERNALLY_AUTHORED_CONTENT: Record<number, string> = {
+  8: `Making your drinking water safe at home
+
+If you're unsure your water is safe to drink, WHO and CDC recommend a three-step process.
+
+1. Clean the water first
+
+If the water looks cloudy or has visible dirt in it, treat it before disinfecting — dirt and cloudiness can shield germs from being killed. Either let it stand in a container for a few hours so heavy particles settle to the bottom, then carefully pour off the clearer water, or strain it through a clean, tightly-woven cloth to remove larger debris.
+
+2. Disinfect the water
+
+Choose one method:
+
+Boiling: bring the water to a rolling boil — large bubbles breaking continuously — and keep it boiling for at least 1 minute. At high altitude, roughly above 2,000 metres (6,500 feet), boil for 3 minutes instead. Let it cool on its own before drinking.
+
+Chlorine: add a chlorine product made for treating drinking water, following the dose on the product's label exactly — the right amount depends on how concentrated the product is. Stir it in and wait at least 30 minutes before drinking.
+
+Filtration: use a water filter rated to remove both bacteria and parasites, such as a certified ceramic filter or a hollow-fibre membrane filter.
+
+3. Store it safely
+
+Treated water can become unsafe again if stored poorly. Keep it in a clean container with a narrow opening and a tight-fitting lid. Never dip cups, hands, or ladles into the storage container — pour from it, or use one fitted with a tap. Use the water reasonably soon after treating it, and don't top up a container of treated water with untreated water.
+
+Compiled from WHO and CDC household water treatment guidance, not a single WHO fact sheet.`,
   12: `How to prepare for a clinic or hospital appointment
 
 Before you go
@@ -215,6 +245,60 @@ async function clearExisting(): Promise<void> {
   }
 }
 
+// Scoped-correction support, added post-Spec-11 for the content-gap fix
+// (progress-tracker.md): kb_sources has no column linking back to
+// kb_topics.json's numeric id, so a targeted "replace just topic N" run
+// can't safely find its old row by category alone once titles/urls change
+// (e.g. topic #8's category, "hygiene", is shared with topic #7). Rather
+// than a fragile title-matching heuristic or a new migration just for a
+// one-time correction, --replace-urls takes the OLD source_url(s) being
+// retired explicitly — auditable, no guessing. Logs what it's about to
+// delete before deleting it.
+async function deleteBySourceUrls(urls: string[]): Promise<void> {
+  const { data: existing, error: selectError } = await supabase
+    .from("kb_sources")
+    .select("id, title, source_url")
+    .in("source_url", urls)
+  if (selectError) {
+    throw new Error(`Failed looking up kb_sources rows to replace: ${selectError.message}`)
+  }
+  for (const row of existing ?? []) {
+    console.log(`  removing existing source: "${row.title}" (${row.source_url})`)
+  }
+  if ((existing ?? []).length !== urls.length) {
+    console.log(
+      `  warning: expected to find ${urls.length} row(s) matching --replace-urls, found ${(existing ?? []).length}`,
+    )
+  }
+
+  const { error } = await supabase.from("kb_sources").delete().in("source_url", urls)
+  if (error) {
+    throw new Error(`Failed deleting kb_sources rows for source_url(s) ${urls.join(", ")}: ${error.message}`)
+  }
+}
+
+// e.g. --topics=2,8 → returns [2, 8]; absent → null (means "all topics").
+function parseCliIdList(flagName: string): number[] | null {
+  const arg = process.argv.find((a) => a.startsWith(`--${flagName}=`))
+  if (!arg) return null
+  return arg
+    .slice(flagName.length + 3)
+    .split(",")
+    .map((s) => Number(s.trim()))
+    .filter((n) => Number.isFinite(n))
+}
+
+// e.g. --replace-urls=https://a,https://b → returns ["https://a", "https://b"].
+function parseCliStringList(flagName: string): string[] | null {
+  const arg = process.argv.find((a) => a.startsWith(`--${flagName}=`))
+  if (!arg) return null
+  return arg
+    .slice(flagName.length + 3)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
 async function insertSource(topic: KbTopic): Promise<string> {
   const { data, error } = await supabase
     .from("kb_sources")
@@ -276,11 +360,27 @@ async function ingestTopic(topic: KbTopic): Promise<{ chunkCount: number }> {
 
 async function main(): Promise<void> {
   const rawTopics = JSON.parse(readFileSync(path.join(process.cwd(), "data/kb_topics.json"), "utf-8"))
-  const topics = KbTopicsFileSchema.parse(rawTopics)
+  const allTopics = KbTopicsFileSchema.parse(rawTopics)
 
-  console.log(`Loaded ${topics.length} topics from data/kb_topics.json`)
-  console.log("Clearing existing kb_sources/kb_chunks rows...")
-  await clearExisting()
+  console.log(`Loaded ${allTopics.length} topics from data/kb_topics.json`)
+
+  // --topics=<ids> / --replace-urls=<old urls>: scoped re-ingestion for a
+  // targeted content correction (e.g. swapping one topic's source without
+  // touching the other 11). Absent → unchanged full-run behavior.
+  const topicIdFilter = parseCliIdList("topics")
+  const replaceUrls = parseCliStringList("replace-urls")
+  const topics = topicIdFilter ? allTopics.filter((topic) => topicIdFilter.includes(topic.id)) : allTopics
+
+  if (topicIdFilter) {
+    console.log(`Scoped run: only topic(s) ${topicIdFilter.join(", ")} (${topics.length} matched)`)
+    if (replaceUrls && replaceUrls.length > 0) {
+      console.log(`Deleting existing kb_sources row(s) matching ${replaceUrls.length} --replace-urls value(s)...`)
+      await deleteBySourceUrls(replaceUrls)
+    }
+  } else {
+    console.log("Clearing existing kb_sources/kb_chunks rows...")
+    await clearExisting()
+  }
 
   const failures: { topic: KbTopic; error: unknown }[] = []
   let totalChunks = 0

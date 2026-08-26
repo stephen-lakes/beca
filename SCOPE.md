@@ -1,4 +1,4 @@
-# Grounded Navigator — Locked Scope (H0–2)
+# Beca — Locked Scope (H0–2)
 
 **Concept:** Grounded Health Navigator (Track 4 — AI Healthcare Information Assistant, HealthAccess Initiative)
 
