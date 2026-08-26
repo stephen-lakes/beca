@@ -6,7 +6,7 @@ Single screen, no routing between pages. "Flow" here means UI states within that
 
 | Screen | Path | Description |
 |---|---|---|
-| Chat | `/` (`app/page.tsx`) | The entire application — message thread, input, toggles, disclaimer bar |
+| Chat | `/` (`app/page.tsx`) | The entire application — header, message thread, input, toggles, disclaimer bar |
 
 ## States within the chat screen
 

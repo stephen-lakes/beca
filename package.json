@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "ingest-kb": "tsx scripts/ingest-kb.ts",
-    "seed-directory": "tsx scripts/seed-directory.ts"
+    "seed-directory": "tsx scripts/seed-directory.ts",
+    "test-set": "tsx tests/run-test-set.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

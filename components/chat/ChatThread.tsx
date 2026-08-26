@@ -10,6 +10,7 @@ import { EscalationCard } from "./EscalationCard"
 import { EmptyState } from "./EmptyState"
 import { ErrorState } from "./ErrorState"
 import { DisclaimerBar } from "./DisclaimerBar"
+import { Header } from "./Header"
 import {
   ChatResponseSchema,
   EscalationResponseSchema,
@@ -119,6 +120,11 @@ export function ChatThread() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-paper">
+      {/* Spec 12 Decision 1: bookends DisclaimerBar's position as the last
+          flex item — one component (this one) owns the full screen's
+          layout, extending Spec 07 Decision 3's principle. */}
+      <Header />
+
       <div className="flex-1 space-y-4 overflow-y-auto px-4 py-6">
         {/* Spec 10 Decision 5: closes the blank-screen gap Spec 08 Decision 4
             deliberately left open. */}

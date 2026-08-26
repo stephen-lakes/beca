@@ -11,7 +11,15 @@ export function EscalationCard({ response }: { response: EscalationResponse }) {
   const { message, matched_entries } = response
 
   return (
-    <div role="alert" className="w-full rounded-2xl border-t-4 border-urgent bg-urgent-soft px-4 py-4">
+    <div
+      role="alert"
+      // Spec 12 Decision 3: entrance animation for "the single highest-value
+      // asset in the build" (ui-context.md) — tw-animate-css utility classes
+      // (already imported, confirmed present in the installed package
+      // version). motion-reduce:animate-none is Tailwind core, respecting
+      // prefers-reduced-motion.
+      className="w-full animate-in rounded-2xl border-t-4 border-urgent bg-urgent-soft px-4 py-4 fade-in slide-in-from-bottom-2 duration-300 motion-reduce:animate-none"
+    >
       <div className="flex items-start gap-2.5">
         <AlertTriangle className="mt-0.5 size-5 shrink-0 text-urgent" aria-hidden="true" />
         <div className="flex-1 space-y-3">

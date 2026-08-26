@@ -33,6 +33,7 @@ Tailwind's default spacing scale (4px base unit). No custom scale is needed at t
 
 ## Component specs
 
+- **Header** — app name only, persistent at the top of the screen, `ink` text on `paper`, thin bottom border. No distinct display face shipped for the MVP (Spec 12) — reuses the existing Geist Sans at a heavier weight rather than a second font import.
 - **Message bubble** — three variants: user, assistant (grounded answer), no-grounded-information.
 - **Citation chip** — small, `safe`-colored, shows the source name and an external-link icon.
 - **Escalation card** — full width, `urgent` top border, `urgent-soft` background, always includes the disclaimer line inline (not just in the global bar).

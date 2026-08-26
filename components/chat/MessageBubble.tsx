@@ -40,6 +40,16 @@ export function MessageBubble(props: MessageBubbleProps) {
   // pressed state independently regardless of which text is displayed.
   const displayedText = pidginOn ? pidgin_version : simpleOn ? simple_version : answer
 
+  // Spec 12 Decision 6: dedupe by source, not chunk_id — a display-layer
+  // concern, not a data-integrity one (architecture.md hard invariant 5 is
+  // about validating what's cited, not how many chips a compact UI renders
+  // for it). If the model cited multiple chunks from the same source page,
+  // this renders one chip, not several identical-looking ones.
+  const uniqueCitations = citations.filter(
+    (citation, index) =>
+      citations.findIndex((c) => c.source_title === citation.source_title && c.source_url === citation.source_url) === index,
+  )
+
   return (
     <div className="flex justify-start">
       <div
@@ -50,9 +60,9 @@ export function MessageBubble(props: MessageBubbleProps) {
         }
       >
         <p>{displayedText}</p>
-        {grounded && citations.length > 0 && (
+        {grounded && uniqueCitations.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
-            {citations.map((citation) => (
+            {uniqueCitations.map((citation) => (
               <CitationChip key={citation.chunk_id} citation={citation} />
             ))}
           </div>
