@@ -61,7 +61,10 @@ export async function POST(request: Request) {
   if (!aiClassification) {
     // Decision 8: classifier failure degrades to deterministic-only, not to
     // a failed request — the exact-phrasing safety net is still active.
-    console.error("classifyUrgency failed after retry for message:", message)
+    // Spec 10: logs message.length, never the raw message text — see
+    // context/specs/10-disclaimer-privacy-error-empty-states.md's
+    // "Found and fixed" section (architecture.md hard invariant 4).
+    console.error("classifyUrgency failed after retry for message of length:", message.length)
   }
 
   const aiFlagged = aiClassification?.urgent === true
@@ -80,7 +83,13 @@ export async function POST(request: Request) {
     // severity whenever urgent is true) — but handled explicitly rather
     // than assumed, per Decision 9's own reasoning.
     if (!category || !severity) {
-      console.error("Escalation branch entered without a resolvable category/severity for message:", message)
+      // Spec 10: logs message.length, never the raw message text — see
+      // context/specs/10-disclaimer-privacy-error-empty-states.md's
+      // "Found and fixed" section (architecture.md hard invariant 4).
+      console.error(
+        "Escalation branch entered without a resolvable category/severity for message of length:",
+        message.length,
+      )
       return NextResponse.json({ error: GENERATION_FAILURE_MESSAGE }, { status: 500 })
     }
 
@@ -122,7 +131,10 @@ export async function POST(request: Request) {
   const result = await generateAnswer(message, chunks)
 
   if (!result) {
-    console.error("generateAnswer failed after retry for message:", message)
+    // Spec 10: logs message.length, never the raw message text — see
+    // context/specs/10-disclaimer-privacy-error-empty-states.md's
+    // "Found and fixed" section (architecture.md hard invariant 4).
+    console.error("generateAnswer failed after retry for message of length:", message.length)
     return NextResponse.json({ error: GENERATION_FAILURE_MESSAGE }, { status: 500 })
   }
 

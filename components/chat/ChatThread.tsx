@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { MessageBubble } from "./MessageBubble"
 import { EscalationCard } from "./EscalationCard"
+import { EmptyState } from "./EmptyState"
+import { ErrorState } from "./ErrorState"
+import { DisclaimerBar } from "./DisclaimerBar"
 import {
   ChatResponseSchema,
   EscalationResponseSchema,
@@ -44,33 +47,32 @@ export function ChatThread() {
   const [messages, setMessages] = useState<ChatTurn[]>([])
   const [inputValue, setInputValue] = useState("")
   const [status, setStatus] = useState<RequestStatus>({ kind: "idle" })
+  // Spec 10 Decision 8: the last submitted message, so "Try again" can
+  // resend it without the user retyping and without appending a second
+  // user bubble (the original one is already visible from the optimistic
+  // append in handleSubmit).
+  const [lastMessage, setLastMessage] = useState("")
 
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    const trimmed = inputValue.trim()
-    // Empty-string guard (unchanged from Spec 07) plus a pending guard
-    // (Decision 9) — defense-in-depth against an Enter-key submit racing
-    // the disabled-prop update on the input/button.
-    if (!trimmed || status.kind === "pending") return
-
-    setMessages((prev) => [...prev, { role: "user", text: trimmed }])
-    setInputValue("")
+  // Spec 10 Decision 8: extracted out of handleSubmit so both the form
+  // submit and ErrorState's retry button share the exact same fetch/
+  // validate/append-or-error logic (Spec 08) instead of duplicating it.
+  async function requestAnswer(message: string) {
     setStatus({ kind: "pending" })
 
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed }),
+        body: JSON.stringify({ message }),
       })
 
       if (!res.ok) {
         // app/api/chat/route.ts never returns anything in `error` except its
         // own pre-written safe strings — never a raw exception — so this is
-        // safe to show verbatim per Decision 10.
+        // safe to show verbatim per Spec 08 Decision 10.
         const body = await res.json().catch(() => null)
-        const message = typeof body?.error === "string" ? body.error : REQUEST_FAILED_MESSAGE
-        setStatus({ kind: "error", message })
+        const errorMessage = typeof body?.error === "string" ? body.error : REQUEST_FAILED_MESSAGE
+        setStatus({ kind: "error", message: errorMessage })
         return
       }
 
@@ -81,10 +83,10 @@ export function ChatThread() {
       }
 
       // Re-validate client-side rather than trusting `escalated` alone
-      // (Decision 11) — the server already validated the same shapes before
-      // sending (Spec 06); this is cheap extra insurance at the client
-      // boundary, in the same spirit as Spec 06's own route-level `.parse()`
-      // calls on hand-constructed objects.
+      // (Spec 08 Decision 11) — the server already validated the same
+      // shapes before sending (Spec 06); this is cheap extra insurance at
+      // the client boundary, in the same spirit as Spec 06's own
+      // route-level `.parse()` calls on hand-constructed objects.
       const parsed = json.escalated ? EscalationResponseSchema.safeParse(json) : ChatResponseSchema.safeParse(json)
 
       if (!parsed.success) {
@@ -101,9 +103,27 @@ export function ChatThread() {
     }
   }
 
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault()
+    const trimmed = inputValue.trim()
+    // Empty-string guard (unchanged from Spec 07) plus a pending guard
+    // (Spec 08 Decision 9) — defense-in-depth against an Enter-key submit
+    // racing the disabled-prop update on the input/button.
+    if (!trimmed || status.kind === "pending") return
+
+    setMessages((prev) => [...prev, { role: "user", text: trimmed }])
+    setLastMessage(trimmed)
+    setInputValue("")
+    await requestAnswer(trimmed)
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-paper">
       <div className="flex-1 space-y-4 overflow-y-auto px-4 py-6">
+        {/* Spec 10 Decision 5: closes the blank-screen gap Spec 08 Decision 4
+            deliberately left open. */}
+        {messages.length === 0 && <EmptyState />}
+
         {messages.map((turn, index) =>
           turn.role === "user" ? (
             <MessageBubble key={index} role="user" text={turn.text} />
@@ -114,13 +134,18 @@ export function ChatThread() {
           )
         )}
 
-        {/* Trailing pending/error slot (Decisions 7, 8, 10) — never stored
-            inside a ChatTurn itself. aria-live announces it without a manual
-            focus move. */}
+        {/* Trailing pending/error slot (Spec 08 Decisions 7, 8, 10) — never
+            stored inside a ChatTurn itself. aria-live announces it without a
+            manual focus move. The pending branch is untouched by Spec 10
+            (loading-state polish is explicitly Spec 12's job); the error
+            branch now renders the dedicated ErrorState component instead of
+            a bare <p> (Spec 10 Decision 6). */}
         {status.kind !== "idle" && (
           <div aria-live="polite" className="px-1">
             {status.kind === "pending" && <p className="text-sm text-ink-soft">Thinking…</p>}
-            {status.kind === "error" && <p className="text-sm text-ink-soft">{status.message}</p>}
+            {status.kind === "error" && (
+              <ErrorState message={status.message} onRetry={() => requestAnswer(lastMessage)} />
+            )}
           </div>
         )}
       </div>
@@ -148,6 +173,11 @@ export function ChatThread() {
           <Send className="size-4" aria-hidden="true" />
         </Button>
       </form>
+
+      {/* Spec 10 Decisions 1–3: persistent across every state (empty,
+          populated, pending, error) since it's outside the conditional
+          blocks above. */}
+      <DisclaimerBar />
     </div>
   )
 }
