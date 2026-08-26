@@ -25,7 +25,15 @@ Dark-mode equivalents are not required for the MVP demo; add them only if polish
 
 ## Typography
 
-The Tailwind default `font-sans` stack is acceptable for MVP speed. If polish time allows, add one distinct display face for the header only — not required to ship.
+Three Google Fonts, loaded via `next/font/google` in `app/layout.tsx` and exposed as Tailwind utilities through `app/globals.css`'s `@theme inline` block — no raw font-family values in components, same rule as color tokens.
+
+| Role | Font | Tailwind utility | Usage |
+|---|---|---|---|
+| Body / UI | Public Sans | `font-sans` (default) | All message text, labels, buttons, disclaimer bar — everything except the header wordmark |
+| Display / heading | Big Shoulders (`opsz` axis, Display range) | `font-heading` | Header wordmark only — condensed and bold, so scope it narrowly rather than letting it spread into body copy |
+| Mono | IBM Plex Mono | `font-mono` | Reserved for tabular/code-like content (e.g. a future timestamp or id) — nothing currently renders with it |
+
+Replaced Geist Sans/Geist Mono post-MVP, at the project owner's explicit direction, after reviewing a side-by-side mockup comparison. See `progress-tracker.md`'s Architecture Decisions for the full rationale, including a real variable-naming bug this change caught and fixed (Geist Sans was never actually wired into the `font-sans` utility).
 
 ## Spacing
 
@@ -33,7 +41,7 @@ Tailwind's default spacing scale (4px base unit). No custom scale is needed at t
 
 ## Component specs
 
-- **Header** — app name only, persistent at the top of the screen, `ink` text on `paper`, thin bottom border. No distinct display face shipped for the MVP (Spec 12) — reuses the existing Geist Sans at a heavier weight rather than a second font import.
+- **Header** — app name only, persistent at the top of the screen, `ink` text on `paper`, thin bottom border, wordmark in `font-heading` (Big Shoulders Display, bold, uppercase).
 - **Message bubble** — three variants: user, assistant (grounded answer), no-grounded-information.
 - **Citation chip** — small, `safe`-colored, shows the source name and an external-link icon.
 - **Escalation card** — full width, `urgent` top border, `urgent-soft` background, always includes the disclaimer line inline (not just in the global bar).

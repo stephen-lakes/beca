@@ -1,15 +1,43 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Public_Sans, Big_Shoulders, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Body/UI face — replaces Geist Sans. Variable named `--font-sans` directly
+// (not `--font-geist-sans`) so it's read live by `@theme inline`'s
+// `--font-sans: var(--font-sans)` in globals.css, per Next.js's own
+// documented next/font + Tailwind v4 pattern. The previous Geist wiring used
+// a mismatched variable name (`--font-geist-sans`) that `--font-sans` never
+// referenced anywhere — Geist was never actually applied by the `font-sans`
+// utility; found while wiring this font system, fixed here, not carried
+// forward.
+const publicSans = Public_Sans({
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Display/heading face — reopens Spec 12's "no second font" decision, at the
+// project owner's explicit direction after reviewing a side-by-side
+// comparison. Scoped to the header only per ui-context.md's Typography
+// section; body copy stays on Public Sans. This installed next/font/google
+// version has no separate `Big_Shoulders_Display` export — Google's several
+// Big Shoulders widths/optical sizes are exposed here as one `Big_Shoulders`
+// family with an `opsz` axis instead, so that's what's requested. `axes`
+// requires `weight: "variable"` (a fixed weight array errors at build time),
+// so the header component's own `font-bold` utility supplies the actual
+// weight from within the font's variable range.
+const bigShouldersDisplay = Big_Shoulders({
+  variable: "--font-display",
   subsets: ["latin"],
+  weight: "variable",
+  axes: ["opsz"],
+});
+
+// Mono face — replaces Geist Mono. Same live-cascade wiring as `--font-sans`
+// above.
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
@@ -21,7 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${publicSans.variable} ${bigShouldersDisplay.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
