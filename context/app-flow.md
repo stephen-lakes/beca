@@ -15,6 +15,7 @@ Single screen, no routing between pages. "Flow" here means UI states within that
 3. **Escalation state** — a visually distinct card: urgency reason, matched directory entry, emergency guidance where relevant. Never rendered as a plain chat bubble — see `ui-context.md`.
 4. **No-grounded-information state** — the model explicitly says it lacks approved-source information on the topic. Never a fabricated answer.
 5. **Error state** — API or network failure: a plain "something went wrong, try again" message. Never a raw error or stack trace shown to the user.
+6. **Clarification state** — the classifier can't yet determine urgency from the message alone, so it asks up to two targeted follow-up questions in the same thread before deciding. Rendered distinctly from both a normal answer bubble and the escalation card. Capped at one clarification round: if the follow-up still leaves genuine uncertainty, the system escalates rather than asking again.
 
 ## Core user journeys
 
@@ -33,6 +34,13 @@ Single screen, no routing between pages. "Flow" here means UI states within that
 **Journey 3 — Language / reading-level toggle**
 1. User toggles "Simple language" or "Pidgin" on an existing answer.
 2. No new API call is needed if `simple_version` / `pidgin_version` were already returned in the original response; otherwise, one lightweight re-render call.
+
+**Journey 4 — Triage clarification**
+1. User sends a message the classifier can't confidently classify as urgent or not from the text alone.
+2. Instead of a normal answer or an escalation, the app renders the Clarification state: up to two targeted follow-up questions, asked in the same thread.
+3. User replies in the same thread, using the same input — no new input mechanism.
+4. The classifier re-runs, using the original message plus the clarifying exchange as combined context.
+5. Definitive result: a normal answer or an escalation card — never a second round of clarifying questions, even if uncertainty remains.
 
 ## Redirect logic
 

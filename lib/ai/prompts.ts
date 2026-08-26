@@ -16,7 +16,7 @@
  */
 
 import type { RetrievedChunk } from "@/lib/kb/search"
-import { DIRECTORY_CATEGORIES } from "@/lib/ai/schema"
+import { DIRECTORY_CATEGORIES, type PriorClarification } from "@/lib/ai/schema"
 
 export interface PromptMessage {
   role: "system" | "user"
@@ -69,25 +69,69 @@ export function buildMessages(query: string, chunks: RetrievedChunk[]): PromptMe
 }
 
 // --- Spec 06: urgency classifier prompt ---
+// Spec 17 extends this with a third outcome, "needs_clarification" — see
+// context/specs/17-triage-clarification-classifier.md Decisions 2, 6, 7.
 
 export function buildClassifierSystemPrompt(): string {
   return [
     "You are an urgency classifier for Beca, a health information assistant for people in Lagos, Nigeria.",
-    "Your only job is to decide whether a single message describes a situation that needs prompt in-person medical care, and if so, which service category and how severe.",
+    "Your job is to decide whether a single message describes a situation that needs prompt in-person medical care, and if so, which service category and how severe. When the message alone doesn't give you enough to decide confidently either way, you may ask up to two short clarifying questions instead of guessing.",
     "",
     "Hard rules, no exceptions:",
-    "- You never diagnose and you never suggest a treatment. You only flag urgency and pick a category — nothing else.",
-    "- Set urgent to true only when the message describes symptoms or a situation a layperson would recognize as needing a health worker's attention soon or now — not for general health questions, prevention questions, or mild/vague discomfort.",
-    `- If urgent is true, category must be exactly one of: ${DIRECTORY_CATEGORIES.join(", ")}. Pick the single best match — most physical emergencies (breathing difficulty, heavy bleeding, unconsciousness, chest pain, stroke signs, severe pregnancy danger signs, seizures, poisoning) are category "emergency".`,
-    "- If urgent is true, severity is \"high\" for anything life-threatening or rapidly worsening, \"medium\" for anything that should be seen soon but isn't immediately life-threatening.",
-    "- If urgent is false, category and severity must both be null.",
+    "- You never diagnose and you never suggest a treatment. You only flag urgency, pick a category, or ask a clarifying question — nothing else.",
+    "- Set outcome to \"urgent\" only when the message describes symptoms or a situation a layperson would recognize as needing a health worker's attention soon or now.",
+    "- Set outcome to \"not_urgent\" for general health questions, prevention questions, or mild/vague discomfort with no real red-flag signal.",
+    "- Set outcome to \"needs_clarification\" only when the message is genuinely ambiguous — not enough detail to tell whether it needs prompt care — and a short, targeted question would actually resolve that. This is not a way to avoid making a judgment call: if you can reasonably decide from the message alone, decide, don't ask.",
+    `- If outcome is "urgent" or "needs_clarification", category must be exactly one of: ${DIRECTORY_CATEGORIES.join(", ")}. Pick the single best match — most physical emergencies (breathing difficulty, heavy bleeding, unconsciousness, chest pain, stroke signs, severe pregnancy danger signs, seizures, poisoning) are category "emergency". For "needs_clarification", this is your best guess given what's known so far — it's only used if the follow-up still leaves things unclear (see the final-round instructions you'll get on that turn).`,
+    "- If outcome is \"urgent\" or \"needs_clarification\", severity is \"high\" for anything life-threatening or rapidly worsening, \"medium\" for anything that should be seen soon but isn't immediately life-threatening — same best-guess rule for \"needs_clarification\" as category above.",
+    "- If outcome is \"not_urgent\", category and severity must both be null.",
+    "- If outcome is \"needs_clarification\", clarifying_questions must contain exactly 1 or 2 short questions in plain language a layperson can answer easily (for example: \"How long has this been going on?\", \"Is this happening to a child or an adult?\") — never more than 2, never open-ended or clinical-sounding. For every other outcome, clarifying_questions must be null.",
     "- reasoning is one short internal sentence explaining your call — it is never shown to the user, so it does not need to be reassuring or in plain language, just accurate.",
   ].join("\n")
 }
 
-export function buildClassifierMessages(message: string): PromptMessage[] {
+// Spec 17 Decision 1/7: when priorClarification is present, this is the
+// user's reply to a clarifying question already asked on this same thread —
+// the server itself is stateless (architecture.md hard invariant 4), so the
+// client supplies that context back on this one turn only. The system
+// prompt gets an addendum forbidding a second "needs_clarification" outcome
+// (the one-round cap), and the user content combines the original message,
+// the question(s) asked, and the new reply — matching app-flow.md Journey 4
+// step 4 ("classifier re-runs with combined context"). This is a prompt-level
+// instruction only; the actual enforcement backstop lives in
+// app/api/chat/route.ts (Decision 4), not here.
+function buildFinalRoundAddendum(): string {
   return [
-    { role: "system", content: buildClassifierSystemPrompt() },
-    { role: "user", content: message },
+    "",
+    "This is a reply to a clarifying question you already asked on this same message. You must decide now: outcome must be \"urgent\" or \"not_urgent\", never \"needs_clarification\" again, even if some uncertainty remains. If you're still genuinely unsure after this reply, choose \"urgent\" rather than ask again — in a health-triage context, the safer default when uncertainty persists is to escalate, not to keep asking.",
+  ].join("\n")
+}
+
+function formatClarificationContext(message: string, priorClarification: PriorClarification): string {
+  return [
+    "Original message:",
+    priorClarification.originalMessage,
+    "",
+    "Clarifying question(s) asked:",
+    ...priorClarification.questionsAsked.map((question, index) => `${index + 1}. ${question}`),
+    "",
+    "User's reply:",
+    message,
+  ].join("\n")
+}
+
+export function buildClassifierMessages(
+  message: string,
+  priorClarification?: PriorClarification | null,
+): PromptMessage[] {
+  const systemContent = priorClarification
+    ? buildClassifierSystemPrompt() + "\n" + buildFinalRoundAddendum()
+    : buildClassifierSystemPrompt()
+
+  const userContent = priorClarification ? formatClarificationContext(message, priorClarification) : message
+
+  return [
+    { role: "system", content: systemContent },
+    { role: "user", content: userContent },
   ]
 }
