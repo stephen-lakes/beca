@@ -7,13 +7,13 @@
 | Frontend | Next.js (App Router) | 14+ | UI, routing, API routes |
 | Language | TypeScript | 5+ | Strict mode everywhere |
 | Styling | Tailwind CSS + shadcn/ui | latest | All visual output — see `ui-context.md` |
-| AI provider | Anthropic Claude API | claude-sonnet | Generation, classification, structured output |
-| Embeddings | Same provider's embedding endpoint (or a dedicated embeddings API if unavailable) | — | KB retrieval |
+| AI provider | OpenAI API | gpt-5.6-terra | Generation, classification, structured output |
+| Embeddings | OpenAI `text-embedding-3-small` | 1536 dims (native) | KB retrieval — 1536 matches `kb_chunks.embedding vector(1536)` with no config; see `progress-tracker.md` Architecture Decisions |
 | Database | Supabase (Postgres + pgvector) | — | KB chunks, directory, red-flag rules |
 | Hosting | Vercel | — | Frontend + API routes, git-push deploys |
 | KB source | WHO fact sheets, 12 topics | — | Fetched once, ingested at build time — see `data/kb_topics.json` |
 
-> **Open decision:** Anthropic Claude is recommended for this build (structured-output support, already the working environment). If the team has existing OpenAI or Gemini credits instead, swap `lib/ai/client.ts` only — no other file references the provider directly. Log the final choice in `progress-tracker.md`.
+**Single provider, resolving the original "open decision" this section used to carry.** Generation, classification, and embeddings all run on OpenAI now — not the Anthropic-for-generation / OpenAI-for-embeddings split Spec 03–05 originally set up. Switched because no Anthropic API key is available, and this consolidates to the one provider already proven working (embeddings, since Spec 03) rather than maintaining two provider integrations for one hackathon-scale app. Full reasoning, model choice, and cost/latency comparison: `progress-tracker.md` Architecture Decisions. `lib/ai/client.ts` is still the only place the generation/classification provider is referenced (the swap stayed contained to that one file, as this section anticipated when it was still an open decision); the embedding call lives in `scripts/ingest-kb.ts` (ingestion) and `lib/kb/search.ts` (query-time embedding) — never in `lib/ai/`, which is reserved for generation/classification per `code-standards.md`.
 
 ## Folder structure
 
@@ -39,7 +39,8 @@ grounded-navigator/
 │   ├── directory/                # lookup.ts
 │   └── supabase/                 # server-only client.ts
 ├── scripts/
-│   └── ingest-kb.ts              # one-off: fetch WHO fact sheets → chunk → embed → store
+│   ├── ingest-kb.ts               # one-off: fetch WHO fact sheets → chunk → embed → store
+│   └── seed-directory.ts          # one-off: load data/clinic_directory.json → directory_entries
 ├── supabase/
 │   └── migrations/0001_init.sql
 ├── data/
@@ -60,7 +61,7 @@ grounded-navigator/
 
 | Service | Purpose | Tier |
 |---|---|---|
-| Anthropic API | Generation, classification, embeddings | Pay-as-you-go — negligible at hackathon scale |
+| OpenAI API | Generation, classification, embeddings | Pay-as-you-go — negligible at hackathon scale |
 | Supabase | Postgres + pgvector + (unused) storage | Free tier |
 | Vercel | Frontend + serverless functions | Free tier |
 

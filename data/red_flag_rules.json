@@ -1,0 +1,82 @@
+[
+  { "id": 1, "taxonomy_category": "Airway", "pattern": "something stuck in throat, can't breathe", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 2, "taxonomy_category": "Airway", "pattern": "choking, can't cough or talk", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 3, "taxonomy_category": "Airway", "pattern": "throat closing up, can't swallow", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 4, "taxonomy_category": "Airway", "pattern": "noisy high-pitched breathing sound (stridor)", "category": "emergency", "severity": "high", "notes": "" },
+
+  { "id": 5, "taxonomy_category": "Breathing", "pattern": "can't breathe", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 6, "taxonomy_category": "Breathing", "pattern": "blue lips or blue face", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 7, "taxonomy_category": "Breathing", "pattern": "gasping for air", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 8, "taxonomy_category": "Breathing", "pattern": "so short of breath, can't finish a sentence", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 9, "taxonomy_category": "Breathing", "pattern": "chest is caving in with every breath", "category": "emergency", "severity": "high", "notes": "" },
+
+  { "id": 10, "taxonomy_category": "Circulation", "pattern": "fainted and won't wake up", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 11, "taxonomy_category": "Circulation", "pattern": "skin cold, clammy, and pale with a racing pulse", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 12, "taxonomy_category": "Circulation", "pattern": "very weak and dizzy standing up, feels like passing out", "category": "emergency", "severity": "medium", "notes": "" },
+  { "id": 13, "taxonomy_category": "Circulation", "pattern": "heart racing along with fainting or near-fainting", "category": "emergency", "severity": "high", "notes": "" },
+
+  { "id": 14, "taxonomy_category": "Neurological", "pattern": "having a seizure or fit right now", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 15, "taxonomy_category": "Neurological", "pattern": "won't wake up, completely unresponsive", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 16, "taxonomy_category": "Neurological", "pattern": "worst headache of my life", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 17, "taxonomy_category": "Neurological", "pattern": "sudden severe headache with a stiff neck and fever", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 18, "taxonomy_category": "Neurological", "pattern": "suddenly confused and not making sense", "category": "emergency", "severity": "high", "notes": "" },
+
+  { "id": 19, "taxonomy_category": "Cardiac", "pattern": "crushing chest pain that won't go away", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 20, "taxonomy_category": "Cardiac", "pattern": "chest pain spreading to the arm, jaw, or back", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 21, "taxonomy_category": "Cardiac", "pattern": "chest pain with sweating, nausea, and shortness of breath", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 22, "taxonomy_category": "Cardiac", "pattern": "irregular or racing heartbeat with chest discomfort", "category": "emergency", "severity": "medium", "notes": "" },
+
+  { "id": 23, "taxonomy_category": "Stroke", "pattern": "sudden drooping on one side of the face", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 24, "taxonomy_category": "Stroke", "pattern": "sudden weakness or numbness down one side of the body", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 25, "taxonomy_category": "Stroke", "pattern": "sudden slurred or garbled speech", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 26, "taxonomy_category": "Stroke", "pattern": "sudden loss of vision in one eye", "category": "emergency", "severity": "high", "notes": "" },
+
+  { "id": 27, "taxonomy_category": "Severe infection", "pattern": "high fever with a stiff neck", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 28, "taxonomy_category": "Severe infection", "pattern": "fever with a rash that doesn't fade when pressed", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 29, "taxonomy_category": "Severe infection", "pattern": "fever with confusion or extreme drowsiness", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 30, "taxonomy_category": "Severe infection", "pattern": "fast breathing and fever, generally very unwell", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 31, "taxonomy_category": "Severe infection", "pattern": "wound that is red, swollen, and spreading with fever", "category": "general-tertiary", "severity": "medium", "notes": "" },
+  { "id": 32, "taxonomy_category": "Severe infection", "pattern": "fever that won't go away after taking malaria medicine", "category": "malaria-treatment", "severity": "medium", "notes": "" },
+  { "id": 33, "taxonomy_category": "Severe infection", "pattern": "high fever for more than three days", "category": "malaria-treatment", "severity": "medium", "notes": "" },
+
+  { "id": 34, "taxonomy_category": "Poisoning/overdose", "pattern": "swallowed poison, a chemical, or an unknown substance", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 35, "taxonomy_category": "Poisoning/overdose", "pattern": "took too many pills, an overdose", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 36, "taxonomy_category": "Poisoning/overdose", "pattern": "unconscious after taking pills or drinking something", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 37, "taxonomy_category": "Poisoning/overdose", "pattern": "swallowed a corrosive or cleaning substance", "category": "emergency", "severity": "high", "notes": "" },
+
+  { "id": 38, "taxonomy_category": "Trauma", "pattern": "bleeding that won't stop even with pressure", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 39, "taxonomy_category": "Trauma", "pattern": "hit their head and lost consciousness", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 40, "taxonomy_category": "Trauma", "pattern": "bone looks bent or out of place after a fall", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 41, "taxonomy_category": "Trauma", "pattern": "deep wound with visible fat or muscle", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 42, "taxonomy_category": "Trauma", "pattern": "road traffic accident with a major injury", "category": "emergency", "severity": "high", "notes": "" },
+
+  { "id": 43, "taxonomy_category": "Allergic reaction", "pattern": "face, lips, or tongue swelling after a sting, bite, or food", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 44, "taxonomy_category": "Allergic reaction", "pattern": "difficulty breathing after a sting or eating something new", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 45, "taxonomy_category": "Allergic reaction", "pattern": "whole-body rash or hives with difficulty breathing", "category": "emergency", "severity": "high", "notes": "" },
+
+  { "id": 46, "taxonomy_category": "Pregnancy/postpartum", "pattern": "heavy vaginal bleeding during pregnancy", "category": "emergency", "severity": "high", "notes": "JUDGMENT CALL — unresolved, flagged for review: category defaulted to 'emergency' (this is a 'go now' danger sign) rather than 'maternal-care' (our maternal-care directory entry is the antenatal clinic — a continuity-of-care destination, not an emergency one). See context/specs/04-directory-seed-load.md Status." },
+  { "id": 47, "taxonomy_category": "Pregnancy/postpartum", "pattern": "convulsions or seizures during pregnancy or after delivery", "category": "emergency", "severity": "high", "notes": "JUDGMENT CALL — same flag as id 46, see there." },
+  { "id": 48, "taxonomy_category": "Pregnancy/postpartum", "pattern": "severe headache with blurred vision during pregnancy", "category": "emergency", "severity": "high", "notes": "JUDGMENT CALL — same flag as id 46, see there." },
+  { "id": 49, "taxonomy_category": "Pregnancy/postpartum", "pattern": "high fever in the days after giving birth", "category": "emergency", "severity": "high", "notes": "JUDGMENT CALL — same flag as id 46, see there." },
+  { "id": 50, "taxonomy_category": "Pregnancy/postpartum", "pattern": "baby has stopped moving or is moving much less than usual", "category": "emergency", "severity": "high", "notes": "JUDGMENT CALL — same flag as id 46, see there." },
+
+  { "id": 51, "taxonomy_category": "Children", "pattern": "child is having convulsions or a fit", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 52, "taxonomy_category": "Children", "pattern": "child is unconscious or very hard to wake up", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 53, "taxonomy_category": "Children", "pattern": "child cannot drink or breastfeed at all", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 54, "taxonomy_category": "Children", "pattern": "child is vomiting everything, can't keep anything down", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 55, "taxonomy_category": "Children", "pattern": "child is unusually floppy, weak, or not feeding normally", "category": "emergency", "severity": "high", "notes": "" },
+  { "id": 56, "taxonomy_category": "Children", "pattern": "child's chest is pulling in hard with every breath", "category": "child-health", "severity": "high", "notes": "" },
+  { "id": 57, "taxonomy_category": "Children", "pattern": "child has had watery diarrhoea for a day or more with sunken eyes or no tears", "category": "child-health", "severity": "high", "notes": "" },
+  { "id": 58, "taxonomy_category": "Children", "pattern": "child has a high fever that won't come down after three days", "category": "child-health", "severity": "medium", "notes": "" },
+
+  { "id": 59, "taxonomy_category": "Mental health", "pattern": "has a plan and means to end their life right now", "category": "mental-health", "severity": "high", "notes": "JUDGMENT CALL — unresolved, flagged for review: this is imminent self-harm risk, not an ordinary red flag. Stored under category='mental-health' for now, but our only mental-health directory entry (Federal Neuro-Psychiatric Hospital, Yaba) has an unverified contact number — an alternative is category='emergency' instead. Beyond the category choice: this pattern likely warrants different escalation copy/handling in Spec 06 (e.g. a crisis-line-style response) rather than the standard 'here's a matched clinic' card used for physical red flags — do not treat as a default case dropped into the same table without revisiting at Spec 06. See context/specs/04-directory-seed-load.md Status." },
+  { "id": 60, "taxonomy_category": "Mental health", "pattern": "talking about wanting to die or not wanting to be alive", "category": "mental-health", "severity": "high", "notes": "JUDGMENT CALL — same flag as id 59, see there." },
+  { "id": 61, "taxonomy_category": "Mental health", "pattern": "has already hurt themselves and needs help now", "category": "mental-health", "severity": "high", "notes": "JUDGMENT CALL — same flag as id 59, see there." },
+  { "id": 62, "taxonomy_category": "Mental health", "pattern": "hearing voices telling them to hurt themselves or others", "category": "mental-health", "severity": "high", "notes": "JUDGMENT CALL — same flag as id 59, see there." },
+  { "id": 63, "taxonomy_category": "Mental health", "pattern": "giving away belongings and saying goodbye to people", "category": "mental-health", "severity": "medium", "notes": "Warning sign short of stated imminent intent/plan — not part of the id 59 flag, but still worth a second look given the same directory-gap issue (unverified contact for the only mental-health entry)." },
+  { "id": 64, "taxonomy_category": "Mental health", "pattern": "feeling hopeless and unable to cope for weeks", "category": "mental-health", "severity": "medium", "notes": "" },
+
+  { "id": 65, "taxonomy_category": "Other acute deterioration", "pattern": "suddenly much sicker than an hour ago", "category": "emergency", "severity": "medium", "notes": "" },
+  { "id": 66, "taxonomy_category": "Other acute deterioration", "pattern": "getting worse very quickly and I don't know why", "category": "emergency", "severity": "medium", "notes": "" },
+  { "id": 67, "taxonomy_category": "Other acute deterioration", "pattern": "not acting like themselves, something is seriously wrong all of a sudden", "category": "emergency", "severity": "medium", "notes": "" }
+]
