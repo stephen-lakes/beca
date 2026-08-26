@@ -20,6 +20,8 @@ import {
   ChatResponseSchema,
   EscalationResponseSchema,
   NO_GROUNDED_INFO_MESSAGE,
+  NO_GROUNDED_INFO_MESSAGE_SIMPLE,
+  NO_GROUNDED_INFO_MESSAGE_PIDGIN,
   GENERATION_FAILURE_MESSAGE,
   HIGH_SEVERITY_MESSAGE,
   MEDIUM_SEVERITY_MESSAGE,
@@ -103,7 +105,16 @@ export async function POST(request: Request) {
   // on the model's judgment when nothing was even retrieved.
   if (chunks.length === 0) {
     return NextResponse.json(
-      ChatResponseSchema.parse({ escalated: false, grounded: false, answer: NO_GROUNDED_INFO_MESSAGE, citations: [] }),
+      ChatResponseSchema.parse({
+        escalated: false,
+        grounded: false,
+        answer: NO_GROUNDED_INFO_MESSAGE,
+        citations: [],
+        // Spec 09: this path never calls the model, so these are the fixed
+        // constants, not model-generated — see lib/ai/schema.ts.
+        simple_version: NO_GROUNDED_INFO_MESSAGE_SIMPLE,
+        pidgin_version: NO_GROUNDED_INFO_MESSAGE_PIDGIN,
+      }),
       { status: 200 },
     )
   }

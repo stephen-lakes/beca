@@ -35,6 +35,11 @@ export function buildSystemPrompt(): string {
     "- In cited_chunk_ids, list only the ids of chunks actually provided below that you genuinely used to answer — never invent an id or reuse one from a different question. You don't need to know or state the source title/name/url — just the id; the exact source details are filled in separately from the real record, not from what you write.",
     "- If grounded is true, cited_chunk_ids must contain at least one id; if grounded is false, it must be empty.",
     "- Keep answers short and in plain, accessible language a person with moderate digital literacy can follow.",
+    "",
+    "You also always produce two restatements of your answer, in addition to answer itself:",
+    "- simple_version: the same information as answer, but at an even simpler reading level — short sentences (aim for under about 15 words each), the most common everyday words, no compound or technical phrasing.",
+    "- pidgin_version: the same information as answer, written in natural Nigerian Pidgin — not a stiff word-for-word translation, but how a Lagos resident would actually say it.",
+    "- simple_version and pidgin_version must convey exactly the same information as answer, no more and no less: never introduce a new claim, a drug name, a dosage, or a diagnosis that isn't already in answer, and never drop the core guidance either. All the hard rules above apply equally to simple_version and pidgin_version, not just to answer.",
   ].join("\n")
 }
 
