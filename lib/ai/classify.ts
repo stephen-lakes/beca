@@ -8,11 +8,20 @@
  * behavior. See context/specs/06-urgency-classifier-escalation.md Decision 8
  * for what app/api/chat/route.ts does with a null result (degrade to the
  * deterministic red-flag check alone, not a request failure).
+ *
+ * Spec 17 extends classifyUrgency() with an optional priorClarification
+ * parameter — when present, this call is the final, must-decide round
+ * following a clarifying question already asked on this thread. See
+ * context/specs/17-triage-clarification-classifier.md.
  */
 
 import OpenAI from "openai"
 import { zodResponseFormat } from "openai/helpers/zod"
-import { UrgencyClassificationSchema, type UrgencyClassification } from "@/lib/ai/schema"
+import {
+  UrgencyClassificationSchema,
+  type UrgencyClassification,
+  type PriorClarification,
+} from "@/lib/ai/schema"
 import { buildClassifierMessages } from "@/lib/ai/prompts"
 
 // Same model as lib/ai/client.ts's generateAnswer — see that file's comment
@@ -30,14 +39,17 @@ function requireEnv(name: string): string {
 
 const openai = new OpenAI({ apiKey: requireEnv("OPENAI_API_KEY") })
 
-async function requestClassification(message: string): Promise<UrgencyClassification | null> {
+async function requestClassification(
+  message: string,
+  priorClarification?: PriorClarification | null,
+): Promise<UrgencyClassification | null> {
   let completion
   try {
     completion = await openai.chat.completions.parse({
       model: MODEL,
       max_completion_tokens: MAX_COMPLETION_TOKENS,
       reasoning_effort: "low", // urgency classification, not a hard reasoning task
-      messages: buildClassifierMessages(message),
+      messages: buildClassifierMessages(message, priorClarification),
       response_format: zodResponseFormat(UrgencyClassificationSchema, "urgency_classification"),
     })
   } catch (error) {
@@ -60,9 +72,17 @@ async function requestClassification(message: string): Promise<UrgencyClassifica
 
   // Cross-field consistency zod can't express inside the structured-output
   // schema itself — see UrgencyClassificationSchema's comment in schema.ts.
-  const consistent = parsed.urgent
-    ? parsed.category !== null && parsed.severity !== null
-    : parsed.category === null && parsed.severity === null
+  // Spec 17: extended from a 2-way (urgent/not) check to the 3-way outcome —
+  // "needs_clarification" requires category/severity as a populated best
+  // guess (not left null), same as "urgent", plus a non-null
+  // clarifying_questions — see context/specs/17-triage-clarification-classifier.md
+  // Decision 2/4.
+  const consistent =
+    parsed.outcome === "not_urgent"
+      ? parsed.category === null && parsed.severity === null && parsed.clarifying_questions === null
+      : parsed.outcome === "urgent"
+        ? parsed.category !== null && parsed.severity !== null && parsed.clarifying_questions === null
+        : parsed.category !== null && parsed.severity !== null && parsed.clarifying_questions !== null
 
   if (!consistent) {
     return null
@@ -71,12 +91,15 @@ async function requestClassification(message: string): Promise<UrgencyClassifica
   return parsed
 }
 
-export async function classifyUrgency(message: string): Promise<UrgencyClassification | null> {
-  const first = await requestClassification(message)
+export async function classifyUrgency(
+  message: string,
+  priorClarification?: PriorClarification | null,
+): Promise<UrgencyClassification | null> {
+  const first = await requestClassification(message, priorClarification)
   if (first) return first
 
   // One retry, same contract as generateAnswer (code-standards.md: "A
   // malformed response is retried once, then falls back to a safe canned
   // response").
-  return requestClassification(message)
+  return requestClassification(message, priorClarification)
 }

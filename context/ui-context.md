@@ -45,6 +45,7 @@ Tailwind's default spacing scale (4px base unit). No custom scale is needed at t
 - **Message bubble** — three variants: user, assistant (grounded answer), no-grounded-information.
 - **Citation chip** — small, `safe`-colored, shows the source name and an external-link icon.
 - **Escalation card** — full width, `urgent` top border, `urgent-soft` background, always includes the disclaimer line inline (not just in the global bar).
+- **Clarification card** (Spec 18) — bubble-width, not full-width like the escalation card: this state carries no safety alarm, and the "unmistakable visual break" language above is reserved for escalation alone. `brand` border, soft `brand`-tinted background (`bg-brand/5`), a `HelpCircle` icon plus a short label ("A couple of quick questions"), then 1–2 questions listed below. `role="status"`, not `role="alert"` — a polite, not assertive, live-region announcement. Never rendered as a plain answer bubble or as the escalation card — see `app-flow.md` state 6.
 - **Toggle (language / reading level)** — shadcn `Toggle` or `Switch`, always labelled, visible active state.
 - **Disclaimer bar** — persistent across every screen state, `ink-soft` text, thin top border.
 

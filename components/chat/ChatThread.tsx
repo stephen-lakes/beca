@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { MessageBubble } from "./MessageBubble"
 import { EscalationCard } from "./EscalationCard"
+import { ClarificationCard } from "./ClarificationCard"
 import { EmptyState } from "./EmptyState"
 import { ErrorState } from "./ErrorState"
 import { DisclaimerBar } from "./DisclaimerBar"
@@ -14,15 +15,52 @@ import { Header } from "./Header"
 import {
   ChatResponseSchema,
   EscalationResponseSchema,
+  ClarificationResponseSchema,
   type ChatResponse,
   type EscalationResponse,
+  type ClarificationResponse,
+  type PriorClarification,
 } from "@/lib/ai/schema"
 
 // Moved here from the now-deleted components/chat/mock-data.ts (Spec 08
 // Decision 3) — this is its only consumer now that the mock fixtures are
 // gone, so it no longer earns its own file per code-standards.md's
-// single-purpose-module principle.
-type ChatTurn = { role: "user"; text: string } | ({ role: "assistant" } & ChatResponse) | ({ role: "assistant" } & EscalationResponse)
+// single-purpose-module principle. Spec 18: gained a third assistant member,
+// ClarificationResponse — all three assistant shapes now carry
+// needs_clarification as a distinct literal (Spec 17), so the per-turn
+// render branch below narrows on it directly, the same way it already
+// narrows on escalated.
+type ChatTurn =
+  | { role: "user"; text: string }
+  | ({ role: "assistant" } & ChatResponse)
+  | ({ role: "assistant" } & EscalationResponse)
+  | ({ role: "assistant" } & ClarificationResponse)
+
+// Spec 18 Decision 7: derives the follow-up context from the thread's own
+// state rather than any new persistence — the server is still fully
+// stateless (Spec 17 Decision 1), this just supplies back what the client
+// already rendered. Only ever meaningful when called with the messages array
+// as it stood immediately before a new user turn is appended (see handleSubmit)
+// — this component's own invariant is that every assistant append is
+// preceded by exactly one new user append, never two consecutive assistant
+// turns, so the entry before a trailing clarification turn is guaranteed to
+// be the user message that triggered it.
+function getPriorClarification(messages: ChatTurn[]): PriorClarification | null {
+  const last = messages[messages.length - 1]
+  if (!last || last.role !== "assistant" || !last.needs_clarification) {
+    return null
+  }
+
+  const precedingUser = messages[messages.length - 2]
+  if (!precedingUser || precedingUser.role !== "user") {
+    // Shouldn't happen given the invariant above — handled explicitly rather
+    // than assumed, same defensive style as app/api/chat/route.ts's
+    // "unreachable in practice" category/severity guard (Spec 06 Decision 9).
+    return null
+  }
+
+  return { originalMessage: precedingUser.text, questionsAsked: last.questions }
+}
 
 // A single global slot, not a per-turn field (Spec 08 Decision 7) — this app
 // only ever has one request in flight at a time (see Decision 9 below).
@@ -53,18 +91,29 @@ export function ChatThread() {
   // user bubble (the original one is already visible from the optimistic
   // append in handleSubmit).
   const [lastMessage, setLastMessage] = useState("")
+  // Spec 18 Decision 8: stored alongside lastMessage, for the same reason —
+  // getPriorClarification() can only be correctly computed from `messages`
+  // *before* the new user turn is optimistically appended, but the retry
+  // button below calls requestAnswer again after that append already
+  // happened. Recomputing it at retry time would silently lose the
+  // clarification context on exactly the turn where losing it matters most.
+  const [lastPriorClarification, setLastPriorClarification] = useState<PriorClarification | null>(null)
 
   // Spec 10 Decision 8: extracted out of handleSubmit so both the form
   // submit and ErrorState's retry button share the exact same fetch/
   // validate/append-or-error logic (Spec 08) instead of duplicating it.
-  async function requestAnswer(message: string) {
+  // Spec 18 Decision 9: gained a second parameter, threaded straight into
+  // the POST body — Spec 17's ChatRequestSchema already accepts this field
+  // as nullable().optional(), so sending an explicit null on every
+  // non-clarification turn is valid and simplest.
+  async function requestAnswer(message: string, priorClarification: PriorClarification | null) {
     setStatus({ kind: "pending" })
 
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message, priorClarification }),
       })
 
       if (!res.ok) {
@@ -87,8 +136,15 @@ export function ChatThread() {
       // (Spec 08 Decision 11) — the server already validated the same
       // shapes before sending (Spec 06); this is cheap extra insurance at
       // the client boundary, in the same spirit as Spec 06's own
-      // route-level `.parse()` calls on hand-constructed objects.
-      const parsed = json.escalated ? EscalationResponseSchema.safeParse(json) : ChatResponseSchema.safeParse(json)
+      // route-level `.parse()` calls on hand-constructed objects. Spec 18
+      // Decision 5: extended from a 2-way to a 3-way check, same
+      // discriminant order lib/ai/schema.ts documents (escalated first,
+      // then needs_clarification).
+      const parsed = json.escalated
+        ? EscalationResponseSchema.safeParse(json)
+        : json.needs_clarification
+          ? ClarificationResponseSchema.safeParse(json)
+          : ChatResponseSchema.safeParse(json)
 
       if (!parsed.success) {
         console.error("Received a response that failed client-side re-validation:", json, parsed.error)
@@ -112,10 +168,16 @@ export function ChatThread() {
     // racing the disabled-prop update on the input/button.
     if (!trimmed || status.kind === "pending") return
 
+    // Spec 18 Decision 7: computed from `messages` as it stands right now —
+    // before the new user turn below is appended, per getPriorClarification's
+    // own contract.
+    const priorClarification = getPriorClarification(messages)
+
     setMessages((prev) => [...prev, { role: "user", text: trimmed }])
     setLastMessage(trimmed)
+    setLastPriorClarification(priorClarification)
     setInputValue("")
-    await requestAnswer(trimmed)
+    await requestAnswer(trimmed, priorClarification)
   }
 
   return (
@@ -135,6 +197,12 @@ export function ChatThread() {
             <MessageBubble key={index} role="user" text={turn.text} />
           ) : turn.escalated ? (
             <EscalationCard key={index} response={turn} />
+          ) : turn.needs_clarification ? (
+            // Spec 18 Decision 4: escalated checked first, then
+            // needs_clarification — the two are mutually exclusive by
+            // construction (lib/ai/schema.ts), matching the discriminant
+            // order Spec 17 documented for the API response shapes.
+            <ClarificationCard key={index} response={turn} />
           ) : (
             <MessageBubble key={index} {...turn} />
           )
@@ -150,7 +218,10 @@ export function ChatThread() {
           <div aria-live="polite" className="px-1">
             {status.kind === "pending" && <p className="text-sm text-ink-soft">Thinking…</p>}
             {status.kind === "error" && (
-              <ErrorState message={status.message} onRetry={() => requestAnswer(lastMessage)} />
+              <ErrorState
+                message={status.message}
+                onRetry={() => requestAnswer(lastMessage, lastPriorClarification)}
+              />
             )}
           </div>
         )}

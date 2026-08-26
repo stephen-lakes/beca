@@ -8,6 +8,13 @@
  * path (searchKb / generateAnswer) is never reached for that message
  * (Decision 4), matching app-flow.md: the escalation card renders in place
  * of a plain answer bubble, not alongside one.
+ *
+ * Spec 17 adds a third possible outcome ahead of the escalation branch:
+ * when the classifier can't confidently decide from the message alone, it
+ * may ask up to two clarifying questions instead of guessing. Capped at one
+ * round — enforced here, not left to the model's prompt-following alone, see
+ * the forcedUrgentOverride comment below. See
+ * context/specs/17-triage-clarification-classifier.md.
  */
 
 import { NextResponse } from "next/server"
@@ -19,6 +26,8 @@ import { checkRedFlagKeywords, findDirectoryEntry } from "@/lib/directory/lookup
 import {
   ChatResponseSchema,
   EscalationResponseSchema,
+  ClarificationResponseSchema,
+  PriorClarificationSchema,
   NO_GROUNDED_INFO_MESSAGE,
   NO_GROUNDED_INFO_MESSAGE_SIMPLE,
   NO_GROUNDED_INFO_MESSAGE_PIDGIN,
@@ -29,6 +38,11 @@ import {
 
 const ChatRequestSchema = z.object({
   message: z.string().min(1).max(2000),
+  // Spec 17 Decision 1: present only on the one turn immediately following a
+  // Clarification-state render — the client's reply to the classifier's own
+  // question(s). The server stays fully stateless; nothing here is ever
+  // persisted, only read for this single request.
+  priorClarification: PriorClarificationSchema.nullable().optional(),
 })
 
 // Decision 6: take the higher severity when both signals fired. Only ever
@@ -49,13 +63,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  const { message } = parsedRequest.data
+  const { message, priorClarification } = parsedRequest.data
 
-  // Decision 2: always run both checks, in parallel, on every message —
-  // never short-circuited by each other.
+  // Decision 2 (Spec 06): always run both checks, in parallel, on every
+  // message — never short-circuited by each other. Spec 17: classifyUrgency
+  // also takes priorClarification, folding it into a combined-context,
+  // final-round prompt when present (lib/ai/prompts.ts).
   const [redFlagMatch, aiClassification] = await Promise.all([
     checkRedFlagKeywords(message),
-    classifyUrgency(message),
+    classifyUrgency(message, priorClarification),
   ])
 
   if (!aiClassification) {
@@ -67,7 +83,22 @@ export async function POST(request: Request) {
     console.error("classifyUrgency failed after retry for message of length:", message.length)
   }
 
-  const aiFlagged = aiClassification?.urgent === true
+  const aiOutcome = aiClassification?.outcome
+
+  // Spec 17 Decision 4: the one-round clarification cap enforced structurally,
+  // not left to the model's prompt-following alone (buildFinalRoundAddendum
+  // in lib/ai/prompts.ts is the other half of this belt-and-suspenders pair).
+  // If this request already carried priorClarification — i.e. this is the
+  // reply to a clarifying question already asked — and the classifier still
+  // returned "needs_clarification", that's a prompt-adherence failure that
+  // must never reach the user as a second question. Override to urgent
+  // instead, using the classifier's own best-guess category/severity, which
+  // is populated on every "needs_clarification" outcome for exactly this
+  // reason (see UrgencyClassificationSchema in lib/ai/schema.ts) — so this
+  // override never needs a second model call or hits a null-category gap.
+  const forcedUrgentOverride = Boolean(priorClarification) && aiOutcome === "needs_clarification"
+
+  const aiFlagged = aiOutcome === "urgent" || forcedUrgentOverride
 
   if (redFlagMatch || aiFlagged) {
     // Decision 6: prefer the deterministic hit's category (a direct
@@ -80,8 +111,10 @@ export async function POST(request: Request) {
     // is guaranteed non-null-with-a-category/severity inside this branch
     // (checkRedFlagKeywords always returns a category+severity together;
     // classifyUrgency's consistency check guarantees non-null category and
-    // severity whenever urgent is true) — but handled explicitly rather
-    // than assumed, per Decision 9's own reasoning.
+    // severity whenever outcome is "urgent" — and, since Spec 17, whenever
+    // outcome is "needs_clarification" too, which is what forcedUrgentOverride
+    // relies on) — but handled explicitly rather than assumed, per Decision
+    // 9's own reasoning.
     if (!category || !severity) {
       // Spec 10: logs message.length, never the raw message text — see
       // context/specs/10-disclaimer-privacy-error-empty-states.md's
@@ -97,6 +130,7 @@ export async function POST(request: Request) {
 
     const escalationResponse = EscalationResponseSchema.parse({
       escalated: true,
+      needs_clarification: false,
       category,
       severity,
       message: severity === "high" ? HIGH_SEVERITY_MESSAGE : MEDIUM_SEVERITY_MESSAGE,
@@ -106,7 +140,23 @@ export async function POST(request: Request) {
     return NextResponse.json(escalationResponse, { status: 200 })
   }
 
-  // Not urgent — Spec 05's RAG flow, unchanged apart from escalated: false.
+  // Spec 17: genuine first-round ambiguity — ask up to two clarifying
+  // questions instead of guessing. Never reachable when priorClarification
+  // was already present on this request: forcedUrgentOverride above claims
+  // that case first (it flows into the escalation branch, not here), so this
+  // can only fire once per thread, matching the app-flow.md cap.
+  if (aiOutcome === "needs_clarification") {
+    const clarificationResponse = ClarificationResponseSchema.parse({
+      escalated: false,
+      needs_clarification: true,
+      questions: aiClassification!.clarifying_questions,
+    })
+
+    return NextResponse.json(clarificationResponse, { status: 200 })
+  }
+
+  // Not urgent — Spec 05's RAG flow, unchanged apart from escalated: false /
+  // needs_clarification: false.
   const chunks = await searchKb(message)
 
   // Deterministic short-circuit — see context/specs/05-rag-chat-api.md
@@ -116,6 +166,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       ChatResponseSchema.parse({
         escalated: false,
+        needs_clarification: false,
         grounded: false,
         answer: NO_GROUNDED_INFO_MESSAGE,
         citations: [],

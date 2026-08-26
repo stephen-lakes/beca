@@ -33,7 +33,7 @@ beca/
 │   ├── chat/                    # ChatThread, MessageBubble, CitationChip,
 │   │                             # EscalationCard, LanguageToggle, ReadingLevelToggle,
 │   │                             # EmptyState, ErrorState, DisclaimerBar (Spec 10),
-│   │                             # Header (Spec 12)
+│   │                             # Header (Spec 12), ClarificationCard (Spec 18)
 │   └── ui/                      # shadcn primitives — do not hand-edit generated files
 ├── lib/
 │   ├── ai/                      # client.ts, prompts.ts, schema.ts, classify.ts

@@ -18,11 +18,13 @@ Generated before implementation begins. Units are in dependency order. Each unit
 | 10 | Disclaimer, privacy notice, error/empty states | Persistent UI elements from `app-flow.md` | 07 |
 | 11 | Test-set script | Run the 15–25 query test set against the deployed build, log pass/fail by category | 08 |
 | 12 | Demo polish pass | Escalation-card visual treatment, citation styling, final pass against `ui-context.md` | 09, 10 |
+| 17 | Multi-turn triage clarification — classifier | Extend `lib/ai/classify.ts` and the shared response schema with a `needs_clarification` type (up to 2 questions, one round only); `app/api/chat/route.ts` tracks whether the prior turn asked a clarifying question and folds the user's reply into re-classification. Verified via curl, no UI. | 06 |
+| 18 | Multi-turn triage clarification — UI | Render the clarification state distinctly in `ChatThread`/`MessageBubble` per the updated `app-flow.md`; wire the follow-up reply into the existing chat input, no new input mechanism. | 17 |
 
 ## Build order rationale
 
 Backend before frontend (05–06 before 08): the API contract has to exist before the UI can be wired to real data, though the UI shell (07) is deliberately built in parallel against mock data so no time is lost waiting. Schema before everything (02 before 03–06): nothing can be ingested or queried without tables to hold it. Security/safety before polish: the classifier and escalation branch (06) land before any visual polish (12) — matches the confirmed judging tie-break order (Impact & Usefulness → Execution & Functionality → Innovation & Originality). Dependencies are installed just-in-time, inside the spec where they're first needed, not upfront in unit 01.
 
-## Total units: 12
+## Total units: 14
 
 ## Estimated sessions: 8–10 (solo build, matches the H4–19 core-build-through-polish window in the 24-hour plan)

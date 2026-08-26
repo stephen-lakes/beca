@@ -38,6 +38,12 @@ Beca is a chat-based AI assistant that answers general health and health-service
 - User accounts, saved history, personalisation
 - Admin/analytics dashboard beyond a small demo metrics panel
 
+## Approved Post-MVP Enhancements
+
+Kept separate from the Must-Have list above so the build history stays honest about what was in the original MVP scope vs. approved afterward.
+
+- **Multi-turn triage clarification.** The urgency classifier asks up to two targeted clarifying questions, in-thread, when it can't confidently classify urgency from a single message alone. Capped at one round: if the clarifying reply still leaves genuine uncertainty, the system escalates rather than asking further questions. This deepens the existing Spec 06 classifier/escalation logic rather than introducing a new capability area, and does not conflict with the "no autonomous multi-step agent behaviour" out-of-scope line below — it's exactly one bounded, user-initiated exchange in the same pattern Journey 2 already uses (a follow-up message in the same thread re-running classification), not open-ended autonomous action.
+
 ## User stories
 
 - As a Lagos resident with a general health question, I want a clear, cited answer in plain language, so that I don't have to parse dense or unreliable web content.

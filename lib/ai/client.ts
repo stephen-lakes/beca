@@ -116,6 +116,11 @@ async function requestStructuredAnswer(query: string, chunks: RetrievedChunk[]):
   // here — see context/specs/09-plain-language-pidgin-toggles.md Decision 6.
   return {
     escalated: false,
+    // Spec 17: ChatResponseSchema gained this field so the client can
+    // distinguish a grounded answer from ClarificationResponseSchema — this
+    // path (real generation) never asks a clarifying question itself, that's
+    // the classifier's job (lib/ai/classify.ts), so it's always false here.
+    needs_clarification: false,
     grounded: parsed.grounded,
     answer: parsed.answer,
     citations,

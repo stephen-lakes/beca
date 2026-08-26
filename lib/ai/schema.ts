@@ -27,6 +27,13 @@ export const ChatResponseSchema = z.object({
   // which shape it's holding first (Spec 06 Decision, see
   // context/specs/06-urgency-classifier-escalation.md).
   escalated: z.literal(false),
+  // Spec 17: always false on this path — distinguishes this shape from
+  // ClarificationResponseSchema below the same way `escalated` distinguishes
+  // it from EscalationResponseSchema. The client checks `escalated` first,
+  // then `needs_clarification`, rather than switching every shape to one
+  // unified `type` discriminant — see
+  // context/specs/17-triage-clarification-classifier.md Decision 3.
+  needs_clarification: z.literal(false),
   // false when the provided context doesn't adequately answer the specific
   // question — distinct from the deterministic zero-retrieval short-circuit
   // in lib/kb/search.ts (see context/specs/05-rag-chat-api.md Decision 3).
@@ -125,21 +132,40 @@ export type DirectoryEntry = z.infer<typeof DirectoryEntrySchema>
 // What the AI classifier itself is asked to produce. category/severity are
 // judgments the model makes directly (unlike ChatResponseSchema's citation
 // metadata, nothing here is reconstructed from a more-trustworthy source
-// afterward) — cross-field null-consistency (urgent implies non-null
-// category/severity, and vice versa) is still checked in lib/ai/classify.ts,
-// the same way ChatResponseSchema's grounded/citations consistency is
-// checked in lib/ai/client.ts, since zod can't express that rule inside the
-// structured-output JSON Schema itself.
+// afterward) — cross-field null-consistency is still checked in
+// lib/ai/classify.ts, the same way ChatResponseSchema's grounded/citations
+// consistency is checked in lib/ai/client.ts, since zod can't express that
+// rule inside the structured-output JSON Schema itself.
+//
+// Spec 17: `urgent: boolean` became a 3-way `outcome` — see
+// context/specs/17-triage-clarification-classifier.md Decision 2. Consistency
+// rule enforced in lib/ai/classify.ts: "not_urgent" → category/severity/
+// clarifying_questions all null; "urgent" → category/severity non-null,
+// clarifying_questions null; "needs_clarification" → category/severity are a
+// required best guess (not left null) *and* clarifying_questions is
+// non-null — the best guess exists specifically so app/api/chat/route.ts
+// always has real values to build an escalation from if the one-round cap
+// (Decision 4) forces an override rather than a second question.
+export const UrgencyOutcomeSchema = z.enum(["not_urgent", "urgent", "needs_clarification"])
+export type UrgencyOutcome = z.infer<typeof UrgencyOutcomeSchema>
+
 export const UrgencyClassificationSchema = z.object({
-  urgent: z.boolean(),
+  outcome: UrgencyOutcomeSchema,
   category: DirectoryCategorySchema.nullable(),
   severity: z.enum(["high", "medium"]).nullable(),
+  // 1–2 items, only when outcome is "needs_clarification" — null otherwise.
+  clarifying_questions: z.array(z.string().min(1)).min(1).max(2).nullable(),
   reasoning: z.string(),
 })
 export type UrgencyClassification = z.infer<typeof UrgencyClassificationSchema>
 
 export const EscalationResponseSchema = z.object({
   escalated: z.literal(true),
+  // Spec 17: mutually exclusive with `escalated: true` by construction —
+  // included for the same uniform-shape reason as ChatResponseSchema's
+  // `needs_clarification: false` above, not because a caller needs to check
+  // both fields to know which response this is.
+  needs_clarification: z.literal(false),
   category: z.string(),
   severity: z.enum(["high", "medium"]),
   message: z.string(),
@@ -151,3 +177,31 @@ export type EscalationResponse = z.infer<typeof EscalationResponseSchema>
 // context/specs/06-urgency-classifier-escalation.md Decision 5.
 export const HIGH_SEVERITY_MESSAGE = "This could be serious. Please seek care now — see the contact(s) below."
 export const MEDIUM_SEVERITY_MESSAGE = "This should be checked by a health worker soon. See the contact(s) below."
+
+// --- Spec 17: multi-turn triage clarification ---
+// context/specs/17-triage-clarification-classifier.md
+
+// The third possible /api/chat response shape, alongside ChatResponseSchema
+// and EscalationResponseSchema above. `escalated: false` is included so the
+// client's existing "check escalated first" branch still works unmodified —
+// this shape is distinguished from ChatResponseSchema by `needs_clarification`
+// alone, the same way EscalationResponseSchema is distinguished by
+// `escalated` alone (Decision 3).
+export const ClarificationResponseSchema = z.object({
+  escalated: z.literal(false),
+  needs_clarification: z.literal(true),
+  questions: z.array(z.string().min(1)).min(1).max(2),
+})
+export type ClarificationResponse = z.infer<typeof ClarificationResponseSchema>
+
+// The request body's optional field carrying clarification context back to
+// the server (Decision 1). The server is still fully stateless — nothing is
+// persisted here, this is only ever read from the incoming request, never
+// written anywhere. Supplied by the client only on the one turn immediately
+// following a Clarification-state render, sourced from what the client
+// already displayed (the original message + the questions it rendered).
+export const PriorClarificationSchema = z.object({
+  originalMessage: z.string().min(1).max(2000),
+  questionsAsked: z.array(z.string().min(1)).min(1).max(2),
+})
+export type PriorClarification = z.infer<typeof PriorClarificationSchema>
