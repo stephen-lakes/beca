@@ -33,7 +33,13 @@ import { buildMessages } from "@/lib/ai/prompts"
 // for straightforward RAG QA). See progress-tracker.md for the full
 // cost/latency comparison against the original claude-sonnet-5 plan.
 const MODEL = "gpt-5.6-terra"
-const MAX_COMPLETION_TOKENS = 2048
+// Spec 09: raised from 2048 — three text fields (answer, simple_version,
+// pidgin_version) are now generated per call instead of one. The two new
+// fields are expected to be similar-length restatements, not longer than
+// answer, so a moderate bump covers the added content without materially
+// inflating cost/latency (see context/specs/09-plain-language-pidgin-toggles.md
+// Decision 13).
+const MAX_COMPLETION_TOKENS = 3072
 
 function requireEnv(name: string): string {
   const value = process.env[name]
@@ -103,7 +109,19 @@ async function requestStructuredAnswer(query: string, chunks: RetrievedChunk[]):
     }
   })
 
-  return { escalated: false, grounded: parsed.grounded, answer: parsed.answer, citations }
+  // simple_version/pidgin_version are read straight from the model's own
+  // output, unlike citations — they're plain restated text, not metadata
+  // that needs reconstructing from a more-trustworthy source. Faithfulness
+  // is enforced at the prompt level (lib/ai/prompts.ts), not re-validated
+  // here — see context/specs/09-plain-language-pidgin-toggles.md Decision 6.
+  return {
+    escalated: false,
+    grounded: parsed.grounded,
+    answer: parsed.answer,
+    citations,
+    simple_version: parsed.simple_version,
+    pidgin_version: parsed.pidgin_version,
+  }
 }
 
 export async function generateAnswer(query: string, chunks: RetrievedChunk[]): Promise<ChatResponse | null> {

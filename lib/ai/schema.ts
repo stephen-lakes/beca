@@ -2,7 +2,13 @@
  * lib/ai/schema.ts — the shared structured-output schema for chat generation
  * and, since Spec 06, urgency classification and escalation responses.
  *
- * No simple_version/pidgin_version fields yet (Spec 09 extends this).
+ * Since Spec 09: every ChatResponse also carries simple_version/
+ * pidgin_version — faithful restatements of `answer` in a further-reduced
+ * reading level and in Nigerian Pidgin, generated in the same completion
+ * (or, on the deterministic zero-retrieval path, sourced from fixed
+ * constants — see NO_GROUNDED_INFO_MESSAGE_SIMPLE/_PIDGIN below). Never
+ * added to EscalationResponseSchema — see
+ * context/specs/09-plain-language-pidgin-toggles.md Decision 1.
  */
 
 import { z } from "zod"
@@ -32,6 +38,12 @@ export const ChatResponseSchema = z.object({
   // complicating what the model has to satisfy, so it's checked as a
   // second pass).
   citations: z.array(CitationSchema),
+  // Spec 09: always populated, never optional — either model-generated
+  // alongside `answer` (lib/ai/client.ts) or, on the deterministic
+  // zero-retrieval path, the fixed NO_GROUNDED_INFO_MESSAGE_SIMPLE/_PIDGIN
+  // constants below (app/api/chat/route.ts).
+  simple_version: z.string().min(1),
+  pidgin_version: z.string().min(1),
 })
 export type ChatResponse = z.infer<typeof ChatResponseSchema>
 
@@ -49,6 +61,14 @@ export const ModelOutputSchema = z.object({
   grounded: z.boolean(),
   answer: z.string().min(1),
   cited_chunk_ids: z.array(z.string()),
+  // Spec 09: requested unconditionally, whether grounded is true or false —
+  // the model always produces an `answer`, so it always produces its two
+  // restatements alongside it. Faithfulness (no new claim/diagnosis/dosage
+  // not already in `answer`) is a prompt-level rule (lib/ai/prompts.ts), not
+  // re-validated here — see context/specs/09-plain-language-pidgin-toggles.md
+  // Decision 6.
+  simple_version: z.string().min(1),
+  pidgin_version: z.string().min(1),
 })
 export type ModelOutput = z.infer<typeof ModelOutputSchema>
 
@@ -56,6 +76,18 @@ export type ModelOutput = z.infer<typeof ModelOutputSchema>
 // (context/specs/05-rag-chat-api.md Decision 6 / app-flow.md states 4 and 5).
 export const NO_GROUNDED_INFO_MESSAGE =
   "I don't have approved-source information on that topic yet. Please ask about vaccines, common illnesses, nutrition, hygiene, family planning, mental health, or preparing for a clinic visit — or see a health worker for anything specific to your situation."
+
+// Spec 09: fixed Simple/Pidgin companions to NO_GROUNDED_INFO_MESSAGE, for
+// the deterministic zero-retrieval path in app/api/chat/route.ts, which
+// never calls the model and so can't ask it for these. Claude-drafted, not
+// yet reviewed by a fluent Pidgin speaker — flagged as an Open Question in
+// context/specs/09-plain-language-pidgin-toggles.md, not blocking since this
+// is non-clinical refusal copy, not a safety categorization.
+export const NO_GROUNDED_INFO_MESSAGE_SIMPLE =
+  "I don't know enough about that yet from a trusted source. You can ask me about things like vaccines, common sickness, food and nutrition, staying clean, family planning, mental health, or getting ready for a clinic visit. For anything about your own health, please see a health worker."
+
+export const NO_GROUNDED_INFO_MESSAGE_PIDGIN =
+  "I no get correct information for that one yet. You fit ask me about vaccine, common sickness, food and nutrition, cleanliness, family planning, mental health, or how to prepare for clinic visit. If na your own case, abeg go see health worker."
 
 export const GENERATION_FAILURE_MESSAGE = "Something went wrong generating an answer. Please try again."
 

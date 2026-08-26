@@ -1,4 +1,8 @@
+import { useState } from "react"
+
 import { CitationChip } from "./CitationChip"
+import { ReadingLevelToggle } from "./ReadingLevelToggle"
+import { LanguageToggle } from "./LanguageToggle"
 import type { ChatResponse } from "@/lib/ai/schema"
 
 // Three variants per ui-context.md: user, assistant (grounded answer),
@@ -8,7 +12,17 @@ import type { ChatResponse } from "@/lib/ai/schema"
 // given. Escalation is never rendered here — see EscalationCard.tsx.
 type MessageBubbleProps = { role: "user"; text: string } | ({ role: "assistant" } & ChatResponse)
 
+// No separate 'use client' directive needed here (Spec 09 Decision 9) — this
+// component is only ever rendered as a descendant of ChatThread.tsx, which
+// already declares 'use client' (Spec 07 Decision 3); the client boundary
+// starts there, not at every interactive descendant.
 export function MessageBubble(props: MessageBubbleProps) {
+  // Spec 09: both toggles are independent booleans, local to this bubble
+  // instance (Decision 7 — each assistant turn already carries all three
+  // text variants, so toggling never needs a new request or global state).
+  const [simpleOn, setSimpleOn] = useState(false)
+  const [pidginOn, setPidginOn] = useState(false)
+
   if (props.role === "user") {
     return (
       <div className="flex justify-end">
@@ -19,7 +33,12 @@ export function MessageBubble(props: MessageBubbleProps) {
     )
   }
 
-  const { grounded, answer, citations } = props
+  const { grounded, answer, citations, simple_version, pidgin_version } = props
+
+  // Decision 8: Pidgin wins when both are on — a documented tie-break, not a
+  // fourth "simple Pidgin" variant. Each toggle still reflects its own
+  // pressed state independently regardless of which text is displayed.
+  const displayedText = pidginOn ? pidgin_version : simpleOn ? simple_version : answer
 
   return (
     <div className="flex justify-start">
@@ -30,7 +49,7 @@ export function MessageBubble(props: MessageBubbleProps) {
             : "max-w-[80%] rounded-2xl border border-dashed border-line bg-paper px-4 py-2.5 text-sm text-ink-soft italic"
         }
       >
-        <p>{answer}</p>
+        <p>{displayedText}</p>
         {grounded && citations.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
             {citations.map((citation) => (
@@ -38,6 +57,10 @@ export function MessageBubble(props: MessageBubbleProps) {
             ))}
           </div>
         )}
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          <ReadingLevelToggle pressed={simpleOn} onPressedChange={() => setSimpleOn((prev) => !prev)} />
+          <LanguageToggle pressed={pidginOn} onPressedChange={() => setPidginOn((prev) => !prev)} />
+        </div>
       </div>
     </div>
   )
