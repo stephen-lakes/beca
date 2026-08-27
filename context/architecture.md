@@ -11,7 +11,7 @@
 | Embeddings | OpenAI `text-embedding-3-small` | 1536 dims (native) | KB retrieval — 1536 matches `kb_chunks.embedding vector(1536)` with no config; see `progress-tracker.md` Architecture Decisions |
 | Database | Supabase (Postgres + pgvector) | — | KB chunks, directory, red-flag rules |
 | Hosting | Vercel | — | Frontend + API routes, git-push deploys |
-| KB source | WHO fact sheets, 12 topics | — | Fetched once, ingested at build time — see `data/kb_topics.json` |
+| KB source | WHO fact sheets, 21 topics | — | Fetched once, ingested at build time — see `data/kb_topics.json`. Expanded from 12 → 21 post-launch (architecture audit, 2026-08-27) to close a real KB-coverage gap; see `progress-tracker.md`. |
 
 **Single provider, resolving the original "open decision" this section used to carry.** Generation, classification, and embeddings all run on OpenAI now — not the Anthropic-for-generation / OpenAI-for-embeddings split Spec 03–05 originally set up. Switched because no Anthropic API key is available, and this consolidates to the one provider already proven working (embeddings, since Spec 03) rather than maintaining two provider integrations for one hackathon-scale app. Full reasoning, model choice, and cost/latency comparison: `progress-tracker.md` Architecture Decisions. `lib/ai/client.ts` is still the only place the generation/classification provider is referenced (the swap stayed contained to that one file, as this section anticipated when it was still an open decision); the embedding call lives in `scripts/ingest-kb.ts` (ingestion) and `lib/kb/search.ts` (query-time embedding) — never in `lib/ai/`, which is reserved for generation/classification per `code-standards.md`.
 
@@ -77,6 +77,7 @@ See `.env.example` at the project root — every variable is listed with what it
 - No file storage is used — no uploads in this MVP.
 - No cache layer is needed at this scale.
 - No user-identity table exists anywhere in the schema. This is deliberate — see `database-schema.md`.
+- **Retrieval is hybrid as of Spec 19**: `lib/kb/search.ts` calls `match_kb_chunks_hybrid`, which unions the existing pgvector similarity search with a Postgres full-text-search (`tsvector`/GIN) rescue channel for chunks the vector search alone would miss below the similarity cutoff, plus bounded, non-LLM keyword-based query expansion sourced from `kb_sources.keywords`. Still Postgres/pgvector only — no new database. See `database-schema.md` and `context/specs/19-hybrid-retrieval-fallback-diagnostics.md`.
 
 ## Auth model
 

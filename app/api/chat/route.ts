@@ -15,11 +15,20 @@
  * round — enforced here, not left to the model's prompt-following alone, see
  * the forcedUrgentOverride comment below. See
  * context/specs/17-triage-clarification-classifier.md.
+ *
+ * Spec 19 adds A-E fallback-outcome logging around the RAG flow's three
+ * no-answer exit points, distinguishing "retrieval found nothing" (D),
+ * "retrieval found something but the model judged it insufficient" (C), and
+ * "the retrieval call itself failed" (B) — previously indistinguishable in
+ * logs (a thrown searchKb error was unhandled here before this spec). No
+ * response shape, status code, or user-facing behavior changes as a result —
+ * this is diagnostic-only, and never logs raw message text (hard invariant
+ * 4). See context/specs/19-hybrid-retrieval-fallback-diagnostics.md Decision 4.
  */
 
 import { NextResponse } from "next/server"
 import { z } from "zod"
-import { searchKb } from "@/lib/kb/search"
+import { searchKb, type RetrievedChunk } from "@/lib/kb/search"
 import { generateAnswer } from "@/lib/ai/client"
 import { classifyUrgency } from "@/lib/ai/classify"
 import { checkRedFlagKeywords, findDirectoryEntry } from "@/lib/directory/lookup"
@@ -157,12 +166,33 @@ export async function POST(request: Request) {
 
   // Not urgent — Spec 05's RAG flow, unchanged apart from escalated: false /
   // needs_clarification: false.
-  const chunks = await searchKb(message)
+  //
+  // Spec 19 Decision 4: searchKb is now wrapped in try/catch — previously an
+  // exception here was unhandled and surfaced as a generic framework error,
+  // indistinguishable in logs from any other crash. Case B below makes that
+  // distinguishable; the response shape/status returned to the client is
+  // identical to the existing generateAnswer-failure path (no new behavior).
+  let chunks: RetrievedChunk[]
+  try {
+    chunks = await searchKb(message)
+  } catch (error) {
+    console.error(
+      "searchKb failed for message of length:",
+      message.length,
+      "— retrieval_outcome: B_retrieval_error —",
+      error instanceof Error ? error.message : String(error),
+    )
+    return NextResponse.json({ error: GENERATION_FAILURE_MESSAGE }, { status: 500 })
+  }
 
   // Deterministic short-circuit — see context/specs/05-rag-chat-api.md
   // Decision 3. Enforces architecture.md hard invariant 1 without relying
   // on the model's judgment when nothing was even retrieved.
   if (chunks.length === 0) {
+    // Spec 19 Decision 4: case D — hybrid retrieval matched nothing on
+    // either channel, most likely a genuine KB-coverage gap rather than a
+    // retrieval/threshold defect. Never logs message text, only its length.
+    console.log("retrieval_outcome: D_no_match — message length:", message.length)
     return NextResponse.json(
       ChatResponseSchema.parse({
         escalated: false,
@@ -187,6 +217,28 @@ export async function POST(request: Request) {
     // "Found and fixed" section (architecture.md hard invariant 4).
     console.error("generateAnswer failed after retry for message of length:", message.length)
     return NextResponse.json({ error: GENERATION_FAILURE_MESSAGE }, { status: 500 })
+  }
+
+  if (!result.grounded) {
+    // Spec 19 Decision 4: case C — something was retrieved, but the model
+    // itself judged it didn't adequately answer the specific question
+    // (lib/ai/prompts.ts's existing grounded:false self-report, unchanged).
+    // Distinct from case D: the topic likely exists, just not the answer to
+    // this exact question. Diagnostic numbers only, never message text.
+    const matchedViaCounts = chunks.reduce<Record<string, number>>((counts, chunk) => {
+      counts[chunk.matchedVia] = (counts[chunk.matchedVia] ?? 0) + 1
+      return counts
+    }, {})
+    console.log(
+      "retrieval_outcome: C_insufficient_evidence — message length:",
+      message.length,
+      "chunkCount:",
+      chunks.length,
+      "topSimilarity:",
+      Math.max(...chunks.map((chunk) => chunk.similarity)),
+      "matchedVia:",
+      matchedViaCounts,
+    )
   }
 
   return NextResponse.json(result, { status: 200 })
