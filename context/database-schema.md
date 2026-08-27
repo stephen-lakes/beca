@@ -17,6 +17,7 @@ None. No `auth.users` table is used by the application. Supabase's built-in auth
 | source_url | text | nullable | Null only for internally authored content |
 | red_flag_linked | boolean | not null, default false | Pairs with `red_flag_rules` |
 | created_at | timestamptz | default `now()` | |
+| keywords | text[] | not null, default `'{}'` | Spec 19 — curated per-topic keywords from `data/kb_topics.json`, persisted by `scripts/ingest-kb.ts`. Used at query time by `lib/kb/search.ts` for bounded keyword-search expansion — never LLM-generated. |
 
 ### `kb_chunks`
 
@@ -27,8 +28,9 @@ None. No `auth.users` table is used by the application. Supabase's built-in auth
 | content | text | not null | The chunked passage |
 | embedding | vector(1536) | not null | pgvector column — dimension must match the chosen embedding model |
 | chunk_index | int | not null | Order within the source |
+| content_tsv | tsvector | generated always as `to_tsvector('english', content)`, stored | Spec 19 — full-text-search column backing the keyword-retrieval channel in `match_kb_chunks_hybrid`. |
 
-Indexes: an ivfflat (or hnsw) index on `embedding` for similarity search; a btree index on `source_id`.
+Indexes: an ivfflat (or hnsw) index on `embedding` for similarity search; a btree index on `source_id`; a GIN index on `content_tsv` (Spec 19, `idx_kb_chunks_content_tsv`).
 
 ### `directory_entries`
 
@@ -72,7 +74,11 @@ RLS is enabled on every table. No policies are granted to the `anon` role. All r
 
 ## Functions / triggers
 
-One function is worth adding: `match_kb_chunks(query_embedding vector, match_count int, min_similarity float)` — returns chunks above the similarity cutoff. Keeps the cutoff logic in the database, not scattered across application code. No triggers are required for the MVP.
+`match_kb_chunks(query_embedding vector, match_count int, min_similarity float)` — the original Spec 02 function. Still present in the database but **no longer called by the running app** as of Spec 19 (kept, not dropped — dropping a function isn't in the additive spirit this project's migrations otherwise follow).
+
+`match_kb_chunks_hybrid(query_embedding vector, query_text text, match_count int, min_similarity float)` — Spec 19, the function `lib/kb/search.ts` actually calls now. Unions the same vector-similarity search as `match_kb_chunks` with a Postgres full-text-search rescue: chunks that satisfy `content_tsv @@ plainto_tsquery('english', query_text)` but fall below the vector `min_similarity` cutoff are still included, up to 3 of the total `match_count` (confirmed at 8). Returns a `matched_via` column (`'vector'` / `'keyword'`), consumed only for diagnostic logging in `app/api/chat/route.ts`, never shown to the user or the model. See `supabase/migrations/0002_hybrid_search.sql` and `context/specs/19-hybrid-retrieval-fallback-diagnostics.md`.
+
+No triggers are required for the MVP.
 
 ## Storage
 

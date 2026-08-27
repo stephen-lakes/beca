@@ -67,12 +67,29 @@ const MIN_EXTRACTED_TEXT_LENGTH = 200
 // external input with zod)
 // ---------------------------------------------------------------------------
 
+// Post-audit (2026-08-27, architecture audit): kb_topics.json gained a set of
+// classification/eval-support fields (slug, description, intents, keywords,
+// related_topics, example_questions, authority_level, status) alongside the
+// original ingestion fields below. None of these new fields are persisted to
+// kb_sources or used by retrieval yet — that's later work (hybrid retrieval /
+// topic filtering), deliberately out of scope for this pass. They're
+// validated here anyway, not left as unchecked passthrough keys, so a
+// malformed entry fails loudly at ingestion time rather than silently
+// dropping data zod would otherwise strip as "unknown."
 const KbTopicSchema = z.object({
   id: z.number(),
+  slug: z.string().min(1),
   title: z.string().min(1),
   category: z.string().min(1),
+  description: z.string().min(1),
+  intents: z.array(z.string().min(1)).min(1),
+  keywords: z.array(z.string().min(1)).min(1),
+  related_topics: z.array(z.string().min(1)),
+  example_questions: z.array(z.string().min(1)).min(1),
   source_name: z.string().min(1),
   source_url: z.url().nullable(),
+  authority_level: z.enum(["primary", "secondary"]),
+  status: z.enum(["active", "draft", "retired"]),
   red_flag_linked: z.boolean(),
   notes: z.string().optional().default(""),
 })
@@ -308,6 +325,10 @@ async function insertSource(topic: KbTopic): Promise<string> {
       source_name: topic.source_name,
       source_url: topic.source_url,
       red_flag_linked: topic.red_flag_linked,
+      // Spec 19: persisted for query-time keyword expansion in
+      // lib/kb/search.ts — requires supabase/migrations/0002_hybrid_search.sql
+      // (kb_sources.keywords) to already be applied.
+      keywords: topic.keywords,
     })
     .select("id")
     .single()
