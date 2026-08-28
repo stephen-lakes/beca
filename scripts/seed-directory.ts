@@ -55,7 +55,14 @@ const ClinicDirectoryEntrySchema = z.object({
   category: z.string().min(1),
   name: z.string().min(1),
   area: z.string().min(1),
-  contact: z.string().min(1),
+  // 2026-08-29: nullable — contact was previously required non-empty text,
+  // which forced entries with no real known number to hold internal
+  // "still needs verification" commentary instead (e.g. "VERIFY — see
+  // [url]") that the UI then rendered to end users as if it were a real
+  // phone number. null now means "no contact on file", matching
+  // directory_entries.contact's own nullable DB column
+  // (database-schema.md) and lib/ai/schema.ts's DirectoryEntrySchema.
+  contact: z.string().min(1).nullable(),
   verified: z.union([z.boolean(), z.literal("name-only"), z.literal("n/a")]),
   // 2026-08-28: directory_entries.services (supabase/migrations/0003_capabilities.sql)
   // — service_navigation's filtering column, additive to the existing
