@@ -63,3 +63,26 @@ export async function findDirectoryEntry(category: string): Promise<DirectoryEnt
 
   return (data ?? []) as DirectoryEntry[]
 }
+
+// 2026-08-28: service_navigation's lookup (context/specs/20-capability-router-and-navigation.md)
+// — additive to findDirectoryEntry above, not a replacement. Filters by the
+// new directory_entries.services array column (supabase/migrations/0003_capabilities.sql)
+// rather than the escalation `category` column, so a calm "where can I get
+// antenatal care" query can reach the same real directory without being
+// routed through escalation-category naming. Part 2 Capability 4 / Part 18:
+// this is the ONLY source of facility information for service_navigation —
+// the LLM never touches this table's absence or presence of a match, it's
+// used to build a fully deterministic response in app/api/chat/route.ts.
+export async function findByService(service: string): Promise<DirectoryEntry[]> {
+  const { data, error } = await supabase
+    .from("directory_entries")
+    .select("category, name, area, contact, verified")
+    .contains("services", [service])
+    .neq("category", "disclaimer")
+
+  if (error) {
+    throw new Error(`Failed fetching directory_entries for service "${service}": ${error.message}`)
+  }
+
+  return (data ?? []) as DirectoryEntry[]
+}

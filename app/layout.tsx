@@ -51,7 +51,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${publicSans.variable} ${bigShouldersDisplay.variable} ${plexMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      {/* h-dvh + overflow-hidden locks the app to exactly one viewport-height
+          screen with no page-level scroll — previously min-h-full let the
+          body grow taller than the viewport whenever content overflowed, so
+          the whole page (including Header and the input form) scrolled
+          along with the message thread instead of staying fixed. Fixed at
+          the project owner's direction; see ui-context.md and
+          ChatThread.tsx's matching h-full on its own root. */}
+      <body className="h-dvh flex flex-col overflow-hidden">{children}</body>
     </html>
   );
 }

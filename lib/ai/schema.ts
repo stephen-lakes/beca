@@ -34,6 +34,11 @@ export const ChatResponseSchema = z.object({
   // unified `type` discriminant — see
   // context/specs/17-triage-clarification-classifier.md Decision 3.
   needs_clarification: z.literal(false),
+  // 2026-08-28: always false on this path — distinguishes this shape from
+  // ServiceNavigationResponseSchema below the same way `needs_clarification`
+  // distinguishes it from ClarificationResponseSchema. See
+  // context/specs/20-capability-router-and-navigation.md.
+  service_navigation: z.literal(false),
   // false when the provided context doesn't adequately answer the specific
   // question — distinct from the deterministic zero-retrieval short-circuit
   // in lib/kb/search.ts (see context/specs/05-rag-chat-api.md Decision 3).
@@ -166,6 +171,9 @@ export const EscalationResponseSchema = z.object({
   // `needs_clarification: false` above, not because a caller needs to check
   // both fields to know which response this is.
   needs_clarification: z.literal(false),
+  // 2026-08-28: same reasoning again for service_navigation — see
+  // ChatResponseSchema's comment above.
+  service_navigation: z.literal(false),
   category: z.string(),
   severity: z.enum(["high", "medium"]),
   message: z.string(),
@@ -177,6 +185,138 @@ export type EscalationResponse = z.infer<typeof EscalationResponseSchema>
 // context/specs/06-urgency-classifier-escalation.md Decision 5.
 export const HIGH_SEVERITY_MESSAGE = "This could be serious. Please seek care now — see the contact(s) below."
 export const MEDIUM_SEVERITY_MESSAGE = "This should be checked by a health worker soon. See the contact(s) below."
+
+// --- 2026-08-28: capability router + healthcare preparation + service
+// navigation (context/specs/20-capability-router-and-navigation.md) ---
+//
+// This section is additive to everything above. Nothing in Specs 05/06/17
+// was changed to make room for it: the capability classifier below only
+// ever runs on a message that has already fallen through the existing
+// safety branch in app/api/chat/route.ts (not urgent, not needs
+// clarification) — see that file's own comment at the call site for why.
+
+// Part 3's minimum list, with one deliberate omission explained in
+// route.ts: "emergency" IS included here (the capability classifier can
+// still name it — a second, independent signal is a safety net, not a
+// replacement for the real one), but it is never the *sole* trigger for
+// escalation copy — see the route's handling.
+export const CAPABILITIES = [
+  "health_education",
+  "preventive_health",
+  "healthcare_preparation",
+  "service_navigation",
+  "disease_information",
+  "when_to_seek_care",
+  "medication_safety",
+  "emergency",
+  "out_of_scope",
+] as const
+export const CapabilitySchema = z.enum(CAPABILITIES)
+export type Capability = z.infer<typeof CapabilitySchema>
+
+// Part 3: capabilities that reuse the existing, unmodified RAG pipeline
+// (searchKb + generateAnswer) — no dedicated dispatch branch of their own.
+// preventive_health is a real, distinct label at the routing/classification
+// level (what Part 2 actually asks for), even though today it shares
+// retrieval mechanics with health_education — see the audit's Part J for why
+// this is an honest, deliberate scoping choice, not a shortcut hidden from
+// the docs.
+export const RAG_CAPABILITIES = [
+  "health_education",
+  "preventive_health",
+  "disease_information",
+  "when_to_seek_care",
+  "medication_safety",
+  "out_of_scope",
+] as const satisfies readonly Capability[]
+
+// Part 13's service list — used only by the deterministic healthcare_preparation
+// lookup (lib/preparation/lookup.ts), never by the LLM to invent guidance.
+export const PREPARATION_SERVICES = [
+  "general_clinic_visit",
+  "antenatal_care",
+  "postnatal_care",
+  "child_immunization",
+  "adult_vaccination",
+  "laboratory_testing",
+  "imaging",
+  "dental_visit",
+  "chronic_disease_follow_up",
+  "specialist_consultation",
+] as const
+export const PreparationServiceSchema = z.enum(PREPARATION_SERVICES)
+export type PreparationService = z.infer<typeof PreparationServiceSchema>
+
+// Part 11's service list — used only to filter directory_entries.services
+// (lib/directory/lookup.ts's findByService), never invented by the model.
+export const NAVIGATION_SERVICES = [
+  "vaccination",
+  "antenatal_care",
+  "postnatal_care",
+  "delivery",
+  "paediatrics",
+  "laboratory",
+  "emergency",
+  "family_planning",
+  "hiv_services",
+  "malaria_services",
+  "general_outpatient",
+  "dental",
+  "imaging",
+  "mental_health",
+  // Added 2026-08-28 for the MedServe-LUTH Cancer Centre (MLCC) directory
+  // entry — Part 11 of context/specs/20-capability-router-and-navigation.md
+  // explicitly says to design this list to be expanded later; not one of
+  // that spec's original example values, added on real demand instead of
+  // speculatively.
+  "oncology",
+] as const
+export const NavigationServiceSchema = z.enum(NAVIGATION_SERVICES)
+export type NavigationService = z.infer<typeof NavigationServiceSchema>
+
+export const RiskLevelSchema = z.enum(["low", "medium", "high"])
+export type RiskLevel = z.infer<typeof RiskLevelSchema>
+
+// What the capability classifier itself is asked to produce. topic/
+// question_type are free-form short labels (informational/observability
+// only — never used to bypass retrieval or fabricate an answer; the actual
+// evidence still comes from searchKb/generateAnswer or the structured
+// lookups). preparation_service/navigation_service/location are populated
+// only when relevant to the chosen capability — consistency enforced in
+// lib/ai/classify-capability.ts, the same way UrgencyClassificationSchema's
+// cross-field rule is enforced in lib/ai/classify.ts (zod can't express it
+// inside the structured-output JSON Schema itself).
+export const CapabilityClassificationSchema = z.object({
+  capability: CapabilitySchema,
+  topic: z.string().nullable(),
+  question_type: z.string().nullable(),
+  risk_level: RiskLevelSchema,
+  preparation_service: PreparationServiceSchema.nullable(),
+  navigation_service: NavigationServiceSchema.nullable(),
+  location: z.string().nullable(),
+  reasoning: z.string(),
+})
+export type CapabilityClassification = z.infer<typeof CapabilityClassificationSchema>
+
+// The fourth possible /api/chat response shape (alongside ChatResponseSchema,
+// EscalationResponseSchema, ClarificationResponseSchema above) — Part 2
+// Capability 4: "the LLM should only format/explain results returned by the
+// database." This response is built entirely from findByService()'s
+// deterministic query result; no LLM call is made for it at all, so there is
+// no generation step that could invent a facility. escalated/
+// needs_clarification stay false so the client's existing "check escalated
+// first, then needs_clarification" branch still works unmodified — this
+// shape is distinguished by service_navigation alone, the same pattern
+// Spec 17/18 used for needs_clarification.
+export const ServiceNavigationResponseSchema = z.object({
+  escalated: z.literal(false),
+  needs_clarification: z.literal(false),
+  service_navigation: z.literal(true),
+  service: NavigationServiceSchema,
+  message: z.string(),
+  matched_entries: z.array(DirectoryEntrySchema),
+})
+export type ServiceNavigationResponse = z.infer<typeof ServiceNavigationResponseSchema>
 
 // --- Spec 17: multi-turn triage clarification ---
 // context/specs/17-triage-clarification-classifier.md
@@ -190,6 +330,9 @@ export const MEDIUM_SEVERITY_MESSAGE = "This should be checked by a health worke
 export const ClarificationResponseSchema = z.object({
   escalated: z.literal(false),
   needs_clarification: z.literal(true),
+  // 2026-08-28: same reasoning again — see ChatResponseSchema's comment
+  // above.
+  service_navigation: z.literal(false),
   questions: z.array(z.string().min(1)).min(1).max(2),
 })
 export type ClarificationResponse = z.infer<typeof ClarificationResponseSchema>

@@ -1,0 +1,164 @@
+[
+  {
+    "question": "How can I reduce my risk of diabetes?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "diabetes",
+    "expected_question_type": "risk_reduction",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How can I reduce my risk of heart disease?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "cardiovascular_disease",
+    "expected_question_type": "risk_reduction",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How can I prevent malaria?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "malaria",
+    "expected_question_type": "prevention",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How can I protect myself from diarrhoeal diseases?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "diarrhoeal_disease",
+    "expected_question_type": "prevention",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How can I maintain a healthy weight?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "obesity",
+    "expected_question_type": "risk_reduction",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What can I do to protect my mental wellbeing?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "mental_health",
+    "expected_question_type": "prevention",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "Why are routine vaccinations important?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "immunization",
+    "expected_question_type": "prevention",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How can I reduce my risk of hypertension?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "hypertension",
+    "expected_question_type": "risk_reduction",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How can I prevent cholera?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "cholera",
+    "expected_question_type": "prevention",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How can I protect myself from hepatitis B?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "hepatitis_b",
+    "expected_question_type": "prevention",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How can I protect myself from STIs?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "stis",
+    "expected_question_type": "prevention",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How can I reduce my risk of tooth decay?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "oral_health",
+    "expected_question_type": "prevention",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How can I prevent foodborne illness at home?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "food_safety",
+    "expected_question_type": "prevention",
+    "expected_risk": "low",
+    "should_answer": false,
+    "notes": "Investigated (2026-08-28), not silently patched: routing is correct (preventive_health, 5 chunks retrieved from the food-safety source at similarity up to 0.51) — the model itself judged the retrieved WHO fact-sheet content insufficiently specific to the 'at home' framing and refused rather than guess, exactly as its faithfulness rule requires. A real content-specificity limit, same class of finding as Spec 11's original pre-eclampsia/water gaps — not a routing, retrieval, or code defect. Worth a future content pass, not a threshold change (Part 9 of the task: don't just lower the threshold)."
+  },
+  {
+    "question": "What preventive care should adults consider?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "noncommunicable_diseases",
+    "expected_question_type": "prevention",
+    "expected_risk": "low",
+    "should_answer": false,
+    "notes": "Investigated (2026-08-28), not silently patched: this question is genuinely broad — no single KB topic holds a general adult-preventive-care checklist, it would span diet, activity, immunization, and NCD screening at once. The model correctly refused rather than guess or blend content across sources beyond what the retrieved context actually supports. Correct, conservative behavior — the original should_answer: true here was too optimistic for how broad this phrasing is."
+  },
+  {
+    "question": "How can I reduce my risk of malnutrition in my child?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "malnutrition",
+    "expected_question_type": "prevention",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What can I do to prevent obesity?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "obesity",
+    "expected_question_type": "prevention",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How can I prevent HIV?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "hiv",
+    "expected_question_type": "risk_reduction",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What lifestyle habits support healthy ageing?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "healthy_ageing",
+    "expected_question_type": "prevention",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How can I reduce my risk of asthma attacks?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "asthma",
+    "expected_question_type": "risk_reduction",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How can I keep my drinking water safe?",
+    "expected_capability": "preventive_health",
+    "expected_topic": "safe_drinking_water",
+    "expected_question_type": "prevention",
+    "expected_risk": "low",
+    "should_answer": true
+  }
+]

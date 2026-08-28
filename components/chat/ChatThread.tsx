@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { MessageBubble } from "./MessageBubble"
 import { EscalationCard } from "./EscalationCard"
 import { ClarificationCard } from "./ClarificationCard"
+import { ServiceResultsCard } from "./ServiceResultsCard"
 import { EmptyState } from "./EmptyState"
 import { ErrorState } from "./ErrorState"
 import { DisclaimerBar } from "./DisclaimerBar"
@@ -16,9 +17,11 @@ import {
   ChatResponseSchema,
   EscalationResponseSchema,
   ClarificationResponseSchema,
+  ServiceNavigationResponseSchema,
   type ChatResponse,
   type EscalationResponse,
   type ClarificationResponse,
+  type ServiceNavigationResponse,
   type PriorClarification,
 } from "@/lib/ai/schema"
 
@@ -29,12 +32,16 @@ import {
 // ClarificationResponse — all three assistant shapes now carry
 // needs_clarification as a distinct literal (Spec 17), so the per-turn
 // render branch below narrows on it directly, the same way it already
-// narrows on escalated.
+// narrows on escalated. 2026-08-28: gained a fourth assistant member,
+// ServiceNavigationResponse (context/specs/20-capability-router-and-navigation.md)
+// — distinguished by its own service_navigation: true literal, checked after
+// escalated/needs_clarification, same pattern.
 type ChatTurn =
   | { role: "user"; text: string }
   | ({ role: "assistant" } & ChatResponse)
   | ({ role: "assistant" } & EscalationResponse)
   | ({ role: "assistant" } & ClarificationResponse)
+  | ({ role: "assistant" } & ServiceNavigationResponse)
 
 // Spec 18 Decision 7: derives the follow-up context from the thread's own
 // state rather than any new persistence — the server is still fully
@@ -139,12 +146,17 @@ export function ChatThread() {
       // route-level `.parse()` calls on hand-constructed objects. Spec 18
       // Decision 5: extended from a 2-way to a 3-way check, same
       // discriminant order lib/ai/schema.ts documents (escalated first,
-      // then needs_clarification).
+      // then needs_clarification). 2026-08-28: extended to a 4-way check —
+      // service_navigation checked last, before falling to the default
+      // ChatResponse shape, same discriminant order lib/ai/schema.ts
+      // documents for it.
       const parsed = json.escalated
         ? EscalationResponseSchema.safeParse(json)
         : json.needs_clarification
           ? ClarificationResponseSchema.safeParse(json)
-          : ChatResponseSchema.safeParse(json)
+          : json.service_navigation
+            ? ServiceNavigationResponseSchema.safeParse(json)
+            : ChatResponseSchema.safeParse(json)
 
       if (!parsed.success) {
         console.error("Received a response that failed client-side re-validation:", json, parsed.error)
@@ -181,75 +193,120 @@ export function ChatThread() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-paper">
+    // h-full (was min-h-0 flex-1 with no height cap) — pairs with
+    // layout.tsx's body now being h-dvh/overflow-hidden instead of
+    // min-h-full: previously the body had no height ceiling, so once the
+    // message thread grew the whole page grew past the viewport and the
+    // *page* scrolled, taking Header and the input form with it. Now this
+    // component is handed a fixed-height box by the body and is the one
+    // that must not overflow it; min-h-0 stays required so the flex-1
+    // thread below can still shrink and become the sole scroll container
+    // instead of stretching this box past its parent's fixed height.
+    <div className="flex h-full min-h-0 flex-col bg-paper">
       {/* Spec 12 Decision 1: bookends DisclaimerBar's position as the last
           flex item — one component (this one) owns the full screen's
           layout, extending Spec 07 Decision 3's principle. */}
       <Header />
 
-      <div className="flex-1 space-y-4 overflow-y-auto px-4 py-6">
-        {/* Spec 10 Decision 5: closes the blank-screen gap Spec 08 Decision 4
-            deliberately left open. */}
-        {messages.length === 0 && <EmptyState />}
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6">
+        {/* mx-auto max-w-3xl (project-owner polish pass, post-Spec-12) —
+            caps the message column at a readable width instead of letting
+            MessageBubble's max-w-[80%] stretch to 80% of a full laptop-width
+            viewport. Same column width Header.tsx, the input form below, and
+            DisclaimerBar.tsx all now share. h-full lets EmptyState's own
+            h-full still resolve to this scroll container's real height, not
+            just its own intrinsic content height. gap-4 replaces the old
+            space-y-4 now that it lives on this inner wrapper instead of the
+            scroll container itself. */}
+        <div className="mx-auto flex h-full w-full max-w-3xl flex-col gap-4">
+          {/* Spec 10 Decision 5: closes the blank-screen gap Spec 08 Decision 4
+              deliberately left open. */}
+          {messages.length === 0 && <EmptyState />}
 
-        {messages.map((turn, index) =>
-          turn.role === "user" ? (
-            <MessageBubble key={index} role="user" text={turn.text} />
-          ) : turn.escalated ? (
-            <EscalationCard key={index} response={turn} />
-          ) : turn.needs_clarification ? (
-            // Spec 18 Decision 4: escalated checked first, then
-            // needs_clarification — the two are mutually exclusive by
-            // construction (lib/ai/schema.ts), matching the discriminant
-            // order Spec 17 documented for the API response shapes.
-            <ClarificationCard key={index} response={turn} />
-          ) : (
-            <MessageBubble key={index} {...turn} />
-          )
-        )}
+          {messages.map((turn, index) =>
+            turn.role === "user" ? (
+              <MessageBubble key={index} role="user" text={turn.text} />
+            ) : turn.escalated ? (
+              <EscalationCard key={index} response={turn} />
+            ) : turn.needs_clarification ? (
+              // Spec 18 Decision 4: escalated checked first, then
+              // needs_clarification — the two are mutually exclusive by
+              // construction (lib/ai/schema.ts), matching the discriminant
+              // order Spec 17 documented for the API response shapes.
+              <ClarificationCard key={index} response={turn} />
+            ) : turn.service_navigation ? (
+              // 2026-08-28: same pattern, checked last before the default
+              // ChatResponse bubble — the four assistant shapes are mutually
+              // exclusive by construction (lib/ai/schema.ts).
+              <ServiceResultsCard key={index} response={turn} />
+            ) : (
+              <MessageBubble key={index} {...turn} />
+            )
+          )}
 
-        {/* Trailing pending/error slot (Spec 08 Decisions 7, 8, 10) — never
-            stored inside a ChatTurn itself. aria-live announces it without a
-            manual focus move. The pending branch is untouched by Spec 10
-            (loading-state polish is explicitly Spec 12's job); the error
-            branch now renders the dedicated ErrorState component instead of
-            a bare <p> (Spec 10 Decision 6). */}
-        {status.kind !== "idle" && (
-          <div aria-live="polite" className="px-1">
-            {status.kind === "pending" && <p className="text-sm text-ink-soft">Thinking…</p>}
-            {status.kind === "error" && (
-              <ErrorState
-                message={status.message}
-                onRetry={() => requestAnswer(lastMessage, lastPriorClarification)}
-              />
-            )}
-          </div>
-        )}
+          {/* Trailing pending/error slot (Spec 08 Decisions 7, 8, 10) — never
+              stored inside a ChatTurn itself. aria-live announces it without a
+              manual focus move. The pending branch is untouched by Spec 10
+              (loading-state polish is explicitly Spec 12's job); the error
+              branch now renders the dedicated ErrorState component instead of
+              a bare <p> (Spec 10 Decision 6). */}
+          {status.kind !== "idle" && (
+            <div aria-live="polite" className="px-1">
+              {status.kind === "pending" && <p className="text-sm text-ink-soft">Thinking…</p>}
+              {status.kind === "error" && (
+                <ErrorState
+                  message={status.message}
+                  onRetry={() => requestAnswer(lastMessage, lastPriorClarification)}
+                />
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-line px-4 py-3">
-        <Input
-          value={inputValue}
-          onChange={(event) => setInputValue(event.target.value)}
-          placeholder="Ask a health question..."
-          aria-label="Message"
-          maxLength={2000}
-          disabled={status.kind === "pending"}
-          className="min-h-11"
-        />
-        {/* min-h-11/min-w-11 = 44px, the ui-context.md touch-target minimum
-            — applied at the call site rather than editing the generated
-            Button primitive (architecture.md: "do not hand-edit generated
-            files"). See context/specs/07-chat-ui-shell.md Decision 9. */}
-        <Button
-          type="submit"
-          disabled={status.kind === "pending"}
-          className="min-h-11 min-w-11"
-          aria-label="Send message"
+      {/* Project-owner polish pass (post-Spec-12): previously a plain
+          full-width bar — border-t, edge-to-edge Input+Button row — which on
+          a laptop-width viewport read as an oversized, un-premium input
+          spanning the whole browser width. Now a two-layer treatment: the
+          outer band still spans full width (paper background, so it reads
+          as part of the page rather than a floating overlay), but the form
+          itself is capped at the same max-w-3xl column as the rest of the
+          app and rendered as a single rounded, bordered, shadowed pill —
+          Input and Button as one visual unit instead of two separate
+          bordered controls sitting side by side. */}
+      <div className="border-t border-line bg-paper px-4 py-3">
+        <form
+          onSubmit={handleSubmit}
+          className="mx-auto flex w-full max-w-3xl items-center gap-1.5 rounded-2xl border border-line bg-card px-2 py-1.5 shadow-sm transition-colors focus-within:border-brand/50 focus-within:ring-2 focus-within:ring-brand/15"
         >
-          <Send className="size-4" aria-hidden="true" />
-        </Button>
-      </form>
+          {/* Border/shadow/ring stripped at the call site so the pill
+              wrapper above supplies the one visible boundary, not editing
+              the generated Input primitive (architecture.md: "do not
+              hand-edit generated files"), same precedent Spec 07 Decision 9
+              set for Button's min-h-11/min-w-11 override below. */}
+          <Input
+            value={inputValue}
+            onChange={(event) => setInputValue(event.target.value)}
+            placeholder="Ask a health question..."
+            aria-label="Message"
+            maxLength={2000}
+            disabled={status.kind === "pending"}
+            className="min-h-11 border-none bg-transparent shadow-none focus-visible:ring-0"
+          />
+          {/* min-h-11/min-w-11 = 44px, the ui-context.md touch-target minimum
+              — applied at the call site rather than editing the generated
+              Button primitive (architecture.md: "do not hand-edit generated
+              files"). See context/specs/07-chat-ui-shell.md Decision 9. */}
+          <Button
+            type="submit"
+            disabled={status.kind === "pending"}
+            className="min-h-11 min-w-11 shrink-0 rounded-xl"
+            aria-label="Send message"
+          >
+            <Send className="size-4" aria-hidden="true" />
+          </Button>
+        </form>
+      </div>
 
       {/* Spec 10 Decisions 1–3: persistent across every state (empty,
           populated, pending, error) since it's outside the conditional

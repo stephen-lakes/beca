@@ -44,7 +44,8 @@ This table is the single source of truth for naming — it is not repeated in `a
 
 - `lib/ai/` — nothing but AI provider calls, prompts, schemas, classification.
 - `lib/kb/` — nothing but knowledge-base retrieval.
-- `lib/directory/` — nothing but directory lookups.
+- `lib/directory/` — nothing but directory lookups (category- and, since Spec 20, service-based).
+- `lib/preparation/` — nothing but `preparation_checklists` lookups (Spec 20).
 - Components never call Supabase or the AI provider directly — always through an API route.
 
 ## Hard invariants

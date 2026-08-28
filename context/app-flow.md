@@ -16,6 +16,7 @@ Single screen, no routing between pages. "Flow" here means UI states within that
 4. **No-grounded-information state** — the model explicitly says it lacks approved-source information on the topic. Never a fabricated answer.
 5. **Error state** — API or network failure: a plain "something went wrong, try again" message. Never a raw error or stack trace shown to the user.
 6. **Clarification state** — the classifier can't yet determine urgency from the message alone, so it asks up to two targeted follow-up questions in the same thread before deciding. Rendered distinctly from both a normal answer bubble and the escalation card. Capped at one clarification round: if the follow-up still leaves genuine uncertainty, the system escalates rather than asking again.
+7. **Service results state** (Spec 20) — a calm, non-alarming card listing verified facilities matched from `directory_entries` for a `service_navigation` question (e.g. "Where can I get antenatal care?"). Never the escalation card's styling — this carries no safety alarm. A genuine zero-match result renders the same card with an honest "not on file" message, never a fabricated facility.
 
 ## Core user journeys
 
@@ -41,6 +42,11 @@ Single screen, no routing between pages. "Flow" here means UI states within that
 3. User replies in the same thread, using the same input — no new input mechanism.
 4. The classifier re-runs, using the original message plus the clarifying exchange as combined context.
 5. Definitive result: a normal answer or an escalation card — never a second round of clarifying questions, even if uncertainty remains.
+
+**Journey 5 — Capability-routed question (Spec 20)**
+1. Same as Journey 1, except after the safety layer clears the message (not urgent, not needing clarification), a capability classifier (`lib/ai/classify-capability.ts`) labels it: `health_education` / `preventive_health` / `disease_information` / `when_to_seek_care` / `medication_safety` / `out_of_scope` all continue through Journey 1's unmodified RAG flow.
+2. A `healthcare_preparation` question (e.g. "What should I bring to my antenatal appointment?") is answered from a structured, exact-match checklist (`preparation_checklists`), not vector search — the checklist is the only "evidence" the model is given, so it can only rephrase it conversationally, never invent beyond it. Renders as a normal answer bubble with a citation to the checklist.
+3. A `service_navigation` question (e.g. "Where can I get vaccinated?") is answered entirely from `directory_entries` with no LLM call at all — see the Service results state above. A genuine zero-match is stated honestly.
 
 ## Redirect logic
 

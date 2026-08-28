@@ -1,0 +1,127 @@
+[
+  {
+    "question": "Where can I get vaccinated?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "vaccination",
+    "should_have_results": true
+  },
+  {
+    "question": "Where can I get antenatal care?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "antenatal_care",
+    "should_have_results": true
+  },
+  {
+    "question": "Which facilities offer child immunization?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "vaccination",
+    "should_have_results": true
+  },
+  {
+    "question": "Where can I find a laboratory?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "laboratory",
+    "should_have_results": true
+  },
+  {
+    "question": "Where can I get emergency care?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "emergency",
+    "should_have_results": true
+  },
+  {
+    "question": "Where can I get postnatal care after delivery?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "postnatal_care",
+    "should_have_results": true
+  },
+  {
+    "question": "Where can I go to deliver my baby?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "delivery",
+    "should_have_results": true
+  },
+  {
+    "question": "Where can I take my child for paediatric care?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "paediatrics",
+    "should_have_results": true
+  },
+  {
+    "question": "Where can I get family planning services?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "family_planning",
+    "should_have_results": true
+  },
+  {
+    "question": "Where can I get tested or treated for malaria?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "malaria_services",
+    "should_have_results": true
+  },
+  {
+    "question": "Where can I get mental health support?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "mental_health",
+    "should_have_results": true
+  },
+  {
+    "question": "Where can I see a general doctor?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "general_outpatient",
+    "should_have_results": true
+  },
+  {
+    "question": "Where can I get dental care?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "dental",
+    "should_have_results": false,
+    "notes": "No directory_entries row is tagged with the 'dental' service yet — must return an honest zero-match response, never an invented facility."
+  },
+  {
+    "question": "Where can I get an X-ray or scan?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "imaging",
+    "should_have_results": false,
+    "notes": "No directory_entries row is tagged with the 'imaging' service yet — must return an honest zero-match response, never an invented facility."
+  },
+  {
+    "question": "Where can I get tested for HIV?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "hiv_services",
+    "should_have_results": false,
+    "notes": "No directory_entries row is tagged with the 'hiv_services' service yet — must return an honest zero-match response, never an invented facility."
+  },
+  {
+    "question": "Is there a clinic near Mushin that offers antenatal care?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "antenatal_care",
+    "should_have_results": true,
+    "notes": "Location ('Mushin') should be captured by the classifier's location field even though this MVP's directory lookup doesn't yet do geographic filtering — see progress-tracker.md Open Questions."
+  },
+  {
+    "question": "Which hospital can I go to for a general check-up?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "general_outpatient",
+    "should_have_results": true
+  },
+  {
+    "question": "Where should I take my baby for their vaccinations?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "vaccination",
+    "should_have_results": true
+  },
+  {
+    "question": "Where can I go for contraception or birth control?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "family_planning",
+    "should_have_results": true
+  },
+  {
+    "question": "Is there a laboratory near Yaba where I can get tested?",
+    "expected_capability": "service_navigation",
+    "expected_navigation_service": "laboratory",
+    "should_have_results": true,
+    "notes": "Also exercises the classifier's free-form location field ('Yaba') — not yet used for filtering (see progress-tracker.md Open Questions), but should still be captured."
+  }
+]

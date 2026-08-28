@@ -444,5 +444,161 @@
     "status": "active",
     "red_flag_linked": true,
     "notes": "Pairs with existing red_flag_rules.json Breathing entries (ids 5–9, e.g. 'can't breathe', 'chest is caving in with every breath') for acute severe attacks — this topic itself covers general education, not emergency danger signs."
+  },
+  {
+    "id": 22,
+    "slug": "oral-health",
+    "title": "Oral health — care and prevention",
+    "category": "healthy-lifestyle",
+    "description": "Why oral health matters, the main risk factors for tooth decay and gum disease, and everyday prevention (brushing, fluoride, sugar, tobacco).",
+    "intents": ["health_education", "benefits", "prevention", "risk_factors"],
+    "keywords": ["oral health", "teeth", "gum disease", "tooth decay", "brushing", "dental"],
+    "related_topics": ["healthy-diet"],
+    "example_questions": [
+      "Why is oral health important?",
+      "How can I prevent tooth decay?",
+      "How often should I brush my teeth?"
+    ],
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/oral-health",
+    "authority_level": "primary",
+    "status": "active",
+    "red_flag_linked": false,
+    "capabilities": ["health_education", "preventive_health"],
+    "notes": "Added in the preventive-health/preparation/navigation architecture pass (2026-08-28). Live-fetched and confirmed (WebFetch) before this URL was committed — covers modifiable risk factors (diet, tobacco, hygiene) and concrete prevention guidance (twice-daily fluoride brushing)."
+  },
+  {
+    "id": 23,
+    "slug": "food-safety",
+    "title": "Food safety — preventing foodborne illness",
+    "category": "hygiene",
+    "description": "Why food safety matters and practical everyday guidance for preventing foodborne illness at home.",
+    "intents": ["health_education", "prevention", "how_it_works"],
+    "keywords": ["food safety", "foodborne illness", "food hygiene", "food handling", "contaminated food"],
+    "related_topics": ["safe-drinking-water", "sanitation", "diarrhoeal-disease"],
+    "example_questions": [
+      "Why is food safety important?",
+      "How can I prevent foodborne illness at home?",
+      "What are safe food handling practices?"
+    ],
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/food-safety",
+    "authority_level": "primary",
+    "status": "active",
+    "red_flag_linked": false,
+    "capabilities": ["health_education", "preventive_health"],
+    "notes": "Added in the preventive-health/preparation/navigation architecture pass (2026-08-28). Live-fetched and confirmed (WebFetch) before this URL was committed — covers WHO's Five Keys to Safer Food and general prevention guidance."
+  },
+  {
+    "id": 24,
+    "slug": "cholera",
+    "title": "Cholera — symptoms, spread, and prevention",
+    "category": "communicable-disease",
+    "description": "What cholera is, how it spreads, its symptoms, and how to prevent it — including when severe watery diarrhoea needs urgent care.",
+    "intents": ["health_education", "definition", "symptoms_information", "prevention", "when_to_seek_care"],
+    "keywords": ["cholera", "severe diarrhoea", "watery diarrhoea", "outbreak", "dehydration"],
+    "related_topics": ["diarrhoeal-disease", "safe-drinking-water", "sanitation"],
+    "example_questions": [
+      "What is cholera?",
+      "How does cholera spread?",
+      "How can I prevent cholera?",
+      "What are the symptoms of cholera?"
+    ],
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/cholera",
+    "authority_level": "primary",
+    "status": "active",
+    "red_flag_linked": true,
+    "capabilities": ["health_education", "preventive_health", "disease_information", "when_to_seek_care"],
+    "notes": "Added in the preventive-health/preparation/navigation architecture pass (2026-08-28). Live-fetched and confirmed (WebFetch) before this URL was committed. red_flag_linked is honest, not aspirational: no cholera-specific red_flag_rules.json pattern exists yet — a severe case would today only be caught by the existing general dehydration/'Severe infection' patterns, same class of gap already logged for diabetes (topic #15) and TB (topic #19)."
+  },
+  {
+    "id": 25,
+    "slug": "hepatitis-b",
+    "title": "Hepatitis B — the basics",
+    "category": "communicable-disease",
+    "description": "What hepatitis B is, how it spreads, and how it is prevented — including vaccination.",
+    "intents": ["health_education", "definition", "prevention", "risk_factors"],
+    "keywords": ["hepatitis", "hepatitis B", "liver infection", "hepatitis vaccine"],
+    "related_topics": ["hiv", "immunization"],
+    "example_questions": [
+      "What is hepatitis B?",
+      "How is hepatitis B spread?",
+      "How can I prevent hepatitis B?",
+      "Is there a vaccine for hepatitis B?"
+    ],
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/hepatitis-b",
+    "authority_level": "primary",
+    "status": "active",
+    "red_flag_linked": false,
+    "capabilities": ["health_education", "preventive_health"],
+    "notes": "Added in the preventive-health/preparation/navigation architecture pass (2026-08-28). Live-fetched and confirmed (WebFetch) before this URL was committed."
+  },
+  {
+    "id": 26,
+    "slug": "stis",
+    "title": "Sexually transmitted infections — the basics",
+    "category": "sexual-reproductive-health",
+    "description": "What sexually transmitted infections are, how they are prevented, and general information on testing and treatment.",
+    "intents": ["health_education", "definition", "prevention", "risk_factors"],
+    "keywords": ["STI", "sexually transmitted infection", "condom", "STI testing", "STI prevention"],
+    "related_topics": ["hiv", "family-planning"],
+    "example_questions": [
+      "What are sexually transmitted infections?",
+      "How can I protect myself from STIs?",
+      "Are STIs treatable?"
+    ],
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/sexually-transmitted-infections-(stis)",
+    "authority_level": "primary",
+    "status": "active",
+    "red_flag_linked": false,
+    "capabilities": ["health_education", "preventive_health"],
+    "notes": "Added in the preventive-health/preparation/navigation architecture pass (2026-08-28). Live-fetched and confirmed (WebFetch) before this URL was committed."
+  },
+  {
+    "id": 27,
+    "slug": "healthy-ageing",
+    "title": "Healthy ageing",
+    "category": "healthy-lifestyle",
+    "description": "What supports healthy ageing — the lifestyle factors (diet, activity, avoiding tobacco) that reduce risk of chronic disease in older age.",
+    "intents": ["health_education", "benefits", "prevention", "lifestyle"],
+    "keywords": ["healthy ageing", "older adults", "elderly health", "ageing well"],
+    "related_topics": ["physical-activity", "healthy-diet", "noncommunicable-diseases"],
+    "example_questions": [
+      "What can I do to age healthily?",
+      "How can older adults stay healthy?",
+      "What lifestyle habits support healthy ageing?"
+    ],
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/ageing-and-health",
+    "authority_level": "primary",
+    "status": "active",
+    "red_flag_linked": false,
+    "capabilities": ["health_education", "preventive_health"],
+    "notes": "Added in the preventive-health/preparation/navigation architecture pass (2026-08-28). Live-fetched and confirmed (WebFetch) before this URL was committed."
+  },
+  {
+    "id": 28,
+    "slug": "newborn-care",
+    "title": "Newborn care — the first month of life",
+    "category": "child-health",
+    "description": "Essential newborn care in the first month of life, main risk factors for newborn illness, and danger signs that need urgent medical attention.",
+    "intents": ["health_education", "how_it_works", "risk_factors", "when_to_seek_care"],
+    "keywords": ["newborn", "neonatal care", "newborn danger signs", "umbilical cord care", "premature birth"],
+    "related_topics": ["infant-feeding", "malnutrition"],
+    "example_questions": [
+      "How do I care for a newborn baby?",
+      "What are the danger signs in a newborn?",
+      "Why is the first month of life so important for a baby?"
+    ],
+    "source_name": "WHO",
+    "source_url": "https://www.who.int/news-room/fact-sheets/detail/newborn-mortality",
+    "authority_level": "primary",
+    "status": "active",
+    "red_flag_linked": true,
+    "capabilities": ["health_education", "preventive_health", "when_to_seek_care"],
+    "notes": "Added in the preventive-health/preparation/navigation architecture pass (2026-08-28). Live-fetched and confirmed (WebFetch) before this URL was committed — covers essential newborn care (thermal protection, cord/skin care) and danger signs prompting urgent care. Pairs with red_flag_rules.json's existing 'Children' category patterns for serious illness in infants."
   }
 ]

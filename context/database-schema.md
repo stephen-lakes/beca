@@ -42,6 +42,7 @@ Indexes: an ivfflat (or hnsw) index on `embedding` for similarity search; a btre
 | area | text | nullable | |
 | contact | text | nullable | Marked unverified until confirmed — see `data/clinic_directory.json` |
 | verified | text | default `'false'` | `'true'` / `'false'` / `'name-only'` |
+| services | text[] | not null, default `'{}'` | Spec 20 — additive to `category`, not a replacement. General, non-emergency service tags (`vaccination`, `antenatal_care`, `laboratory`, ...) used only by `service_navigation` (`lib/directory/lookup.ts`'s `findByService`), so a calm "where can I get X" query can reach the same directory without going through escalation-category naming. Populated from `data/clinic_directory.json`'s `services` field by `scripts/seed-directory.ts` — **inferred from each entry's existing `category`, not independently verified per facility** (see that file's entry #12 note), the same cautious treatment `verified` already gives unconfirmed contact numbers. |
 
 ### `red_flag_rules`
 
@@ -51,6 +52,22 @@ Indexes: an ivfflat (or hnsw) index on `embedding` for similarity search; a btre
 | pattern | text | not null | Keyword or simple pattern |
 | category | text | not null | Links to a `directory_entries` category |
 | severity | text | not null | `"high"` / `"medium"` |
+
+### `preparation_checklists`
+
+| Column | Type | Constraints | Purpose |
+|---|---|---|---|
+| id | uuid | PK, default `gen_random_uuid()` | |
+| service | text | not null, unique | One of `PREPARATION_SERVICES` (`lib/ai/schema.ts`) — exact-match key, looked up deterministically by `lib/preparation/lookup.ts`, never by similarity search |
+| title | text | not null | |
+| preparation_items | text[] | not null | |
+| variability_note | text | not null | "Requirements may vary by facility, always confirm directly" — every row has one, per Part 13 of `context/specs/20-capability-router-and-navigation.md` |
+| source_type | text | not null, default `'team-authored'` | |
+| clinical_review_status | text | not null, default `'drafted_pending_clinical_review'` | Honest default, not an unearned `'approved'` — see `progress-tracker.md` Open Questions |
+| review_date | date | nullable | |
+| created_at | timestamptz | default `now()` | |
+
+Spec 20 (2026-08-28) — `healthcare_preparation`'s structured, non-vector-RAG lookup. Seeded from `data/preparation_checklists.json` by `scripts/seed-preparation.ts`, same pattern `scripts/seed-directory.ts` already established. RLS enabled, zero anon/authenticated policies, same posture as every other table.
 
 ### `query_log` (optional, off by default)
 
@@ -70,7 +87,7 @@ No raw user message text is ever written to `query_log` — this table exists on
 
 ## RLS policies
 
-RLS is enabled on every table. No policies are granted to the `anon` role. All reads and writes go through server-side API routes using the service role key. Default posture: deny all for `anon` and `authenticated`.
+RLS is enabled on every table, including `preparation_checklists` (Spec 20). No policies are granted to the `anon` role. All reads and writes go through server-side API routes using the service role key. Default posture: deny all for `anon` and `authenticated`.
 
 ## Functions / triggers
 
