@@ -71,6 +71,29 @@ const NAVIGATION_SERVICE_LABELS: Record<string, string> = {
   oncology: "cancer care / oncology services",
 }
 
+// 2026-08-29: replaces the old flat "Here's what we have on file for X in
+// our directory." line — reported as reading robotic. Still fixed,
+// deterministic template copy, never LLM-generated (same reasoning as
+// HIGH_SEVERITY_MESSAGE/MEDIUM_SEVERITY_MESSAGE and the zero-match line
+// below: this is a structured, no-LLM-call response path, and a generated
+// sentence could in principle invent or mischaracterize a real facility).
+// Names the single match directly when there's exactly one (matches the
+// reported example precisely); a plain "a few places" for multiple, rather
+// than stitching every name into one run-on sentence that just repeats what
+// each entry's own card already shows below.
+function buildServiceNavigationMessage(label: string, entries: DirectoryEntry[]): string {
+  if (entries.length === 0) {
+    return `We don't have a verified facility offering ${label} on file yet. Please check with a nearby primary health centre or the Lagos State Ministry of Health directly.`
+  }
+
+  const intro =
+    entries.length === 1
+      ? `You can try ${entries[0].name} for ${label}.`
+      : `Here are a few places you can try for ${label}.`
+
+  return `${intro} I'd recommend calling ahead to confirm they can help with what you need.`
+}
+
 const ChatRequestSchema = z.object({
   message: z.string().min(1).max(2000),
   // Spec 17 Decision 1: present only on the one turn immediately following a
@@ -265,10 +288,7 @@ export async function POST(request: Request) {
       needs_clarification: false,
       service_navigation: true,
       service,
-      message:
-        matchedEntries.length > 0
-          ? `Here's what we have on file for ${label} in our directory.`
-          : `We don't have a verified facility offering ${label} on file yet. Please check with a nearby primary health centre or the Lagos State Ministry of Health directly.`,
+      message: buildServiceNavigationMessage(label, matchedEntries),
       matched_entries: matchedEntries,
     })
 

@@ -4,7 +4,7 @@
     "category": "emergency",
     "name": "Lagos State emergency / ambulance service",
     "area": "Lagos-wide",
-    "contact": "VERIFY — see https://lagosstate.gov.ng/emergency-numbers/ or LASEMA https://lasema.lagosstate.gov.ng/contact-us-2/",
+    "contact": null,
     "verified": false,
     "services": ["emergency"]
   },
@@ -13,7 +13,7 @@
     "category": "emergency",
     "name": "Nigeria unified emergency number (commonly cited as 112)",
     "area": "National",
-    "contact": "VERIFY current/active status before putting this on screen",
+    "contact": null,
     "verified": false,
     "services": ["emergency"]
   },
@@ -22,7 +22,7 @@
     "category": "general-tertiary",
     "name": "Lagos State University Teaching Hospital (LASUTH)",
     "area": "Ikeja",
-    "contact": "Facility name is real and well-known — VERIFY current phone/address before demo",
+    "contact": null,
     "verified": "name-only",
     "services": ["general_outpatient", "laboratory", "antenatal_care", "postnatal_care", "delivery", "vaccination", "paediatrics", "malaria_services"]
   },
@@ -31,7 +31,7 @@
     "category": "general-tertiary",
     "name": "General Hospital Lagos",
     "area": "Lagos Island",
-    "contact": "Facility name is real and well-known — VERIFY current phone/address before demo",
+    "contact": null,
     "verified": "name-only",
     "services": ["general_outpatient", "laboratory", "antenatal_care", "postnatal_care", "delivery", "vaccination", "paediatrics", "malaria_services"]
   },
@@ -76,7 +76,7 @@
     "category": "mental-health",
     "name": "Federal Neuro-Psychiatric Hospital, Yaba",
     "area": "Yaba",
-    "contact": "Facility is real (fnphyaba.gov.ng) — VERIFY current phone number before demo",
+    "contact": null,
     "verified": "name-only",
     "services": ["mental_health"]
   },
@@ -85,25 +85,16 @@
     "category": "family-planning",
     "name": "Marie Stopes Nigeria — Lagos clinic",
     "area": "Lagos (confirm nearest branch)",
-    "contact": "Organisation is real (mariestopes.org.ng) — VERIFY nearest branch + phone",
+    "contact": null,
     "verified": "name-only",
     "services": ["family_planning"]
-  },
-  {
-    "id": 11,
-    "category": "general",
-    "name": "[Add 1–2 real pharmacies or clinics you personally know near the demo neighbourhood]",
-    "area": "TBD",
-    "contact": "FILL IN",
-    "verified": false,
-    "services": ["general_outpatient"]
   },
   {
     "id": 12,
     "category": "disclaimer",
     "name": "Directory scope note",
     "area": "n/a",
-    "contact": "This is a small, hand-curated seed (grown from 11 to 14 real entries as of 2026-08-28), not a comprehensive map — say so plainly in the pitch, don't imply full coverage. `services` values added 2026-08-28 are INFERRED from each entry's existing escalation `category`, not independently verified per facility the way `verified` tracks contact-detail confirmation — treat a listed service the same cautious way as an unconfirmed contact number. Entries #16-19 briefly pointed the primary-care/maternal-care/child-health/malaria-treatment escalation categories at LASUTH as a stopgap (so no escalation category was ever left with zero directory entries) until a real local PHC could be sourced — resolved the same day: Omodigbo Primary Health Centre, Mushin (project-owner-supplied, first-hand knowledge; the Palm Avenue/Mushin location independently corroborated against Mushin LGA's own official site, which gives its own secretariat address as '82/84 Palm Avenue, Mushin' — but the specific street landmark and phone number rest on the project owner's own knowledge, not independently confirmed by an AI-run search, so `verified` stays 'name-only', same tier as LASUTH/LUTH) now fills those 4 rows and finally resolves SCOPE.md's original H0-2 checklist item.",
+    "contact": "This is a small, hand-curated seed (13 real facility/service entries as of 2026-08-29 — grown from 11 to 14 on 2026-08-28, then entry #11's unfilled placeholder pharmacy/clinic row was deleted), not a comprehensive map — say so plainly in the pitch, don't imply full coverage. `services` values added 2026-08-28 are INFERRED from each entry's existing escalation `category`, not independently verified per facility the way `verified` tracks contact-detail confirmation — treat a listed service the same cautious way as an unconfirmed contact number. Entries #16-19 briefly pointed the primary-care/maternal-care/child-health/malaria-treatment escalation categories at LASUTH as a stopgap (so no escalation category was ever left with zero directory entries) until a real local PHC could be sourced — resolved the same day: Omodigbo Primary Health Centre, Mushin (project-owner-supplied, first-hand knowledge; the Palm Avenue/Mushin location independently corroborated against Mushin LGA's own official site, which gives its own secretariat address as '82/84 Palm Avenue, Mushin' — but the specific street landmark and phone number rest on the project owner's own knowledge, not independently confirmed by an AI-run search, so `verified` stays 'name-only', same tier as LASUTH/LUTH) now fills those 4 rows and finally resolves SCOPE.md's original H0-2 checklist item. 2026-08-29: `contact` was being conflated with internal 'still needs verification' commentary (e.g. 'VERIFY — see [url]', 'Facility name is real and well-known — VERIFY current phone/address before demo') which the UI was then rendering directly to end users as if it were a real phone number — fixed by setting `contact: null` on every entry whose field held only that kind of note (ids 1, 2, 3, 4, 8, 9, 13, 14) and trimming id 15's trailing confirmation clause off its real numbers; the underlying 'needs a real verified number' gap those notes described is unchanged and still tracked in SCOPE.md's pre-demo checklist, not resolved by this cleanup — this only stopped the placeholder text from masquerading as contact info on screen.",
     "verified": "n/a",
     "services": []
   },
@@ -112,7 +103,7 @@
     "category": "general-tertiary",
     "name": "Lagos University Teaching Hospital (LUTH) — Idi-Araba",
     "area": "Idi-Araba, Ishaga Road, Lagos",
-    "contact": "VERIFY — address/phone sourced informally (web search, project-owner-supplied 2026-08-28), not confirmed against LUTH's own site or by phone",
+    "contact": null,
     "verified": "name-only",
     "services": ["general_outpatient", "laboratory", "imaging", "dental", "paediatrics", "emergency"]
   },
@@ -121,7 +112,7 @@
     "category": "general-tertiary",
     "name": "LUTH Harvey Road Annex (Dermatology / Psychiatry Clinic)",
     "area": "Harvey Road, Yaba",
-    "contact": "VERIFY — address/phone sourced informally (web search, project-owner-supplied 2026-08-28), not confirmed against LUTH's own site or by phone",
+    "contact": null,
     "verified": "name-only",
     "services": ["mental_health"]
   },
@@ -130,7 +121,7 @@
     "category": "general-tertiary",
     "name": "Medserve-LUTH Cancer Centre (MLCC)",
     "area": "Inside LUTH, Idi-Araba, Surulere, Lagos — hours not independently confirmed (project-owner-supplied: Mon–Fri 8:00 AM–5:00 PM, closed weekends/public holidays)",
-    "contact": "0700 674 2588 or 0903 000 9438 (WhatsApp: 0903 000 9436) — phone numbers independently confirmed live against the organisation's own site, https://nlcc.ng, on 2026-08-28",
+    "contact": "0700 674 2588 or 0903 000 9438 (WhatsApp: 0903 000 9436)",
     "verified": true,
     "services": ["oncology"]
   }

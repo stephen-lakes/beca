@@ -37,22 +37,24 @@ export function ServiceResultsCard({ response }: { response: ServiceNavigationRe
                 >
                   <p className="font-medium text-ink">{entry.name}</p>
                   {entry.area && <p className="text-ink-soft">{entry.area}</p>}
-                  {entry.verified === "name-only" ? (
-                    <p className="text-ink-soft">Contact unconfirmed — no number on file</p>
-                  ) : (
-                    entry.contact && (
-                      <p className="text-ink-soft">
-                        {entry.contact}
-                        {entry.verified !== "true" && (
-                          // Deliberately NOT text-urgent — ui-context.md reserves that
-                          // token for the escalation card alone ("never used for
-                          // anything else"). This app has no separate "warning" token,
-                          // so the unconfirmed qualifier is styled/labelled plainly
-                          // instead of color-coded, matching this card's calmer intent.
-                          <span className="ml-1 text-xs italic text-ink-soft">(unconfirmed)</span>
-                        )}
-                      </p>
-                    )
+                  {/* 2026-08-29: verified === "name-only" does NOT reliably mean
+                      "no contact on file" — several entries (e.g. Omodigbo PHC)
+                      carry a real, unconfirmed number under that status. Render
+                      purely off whether contact itself is present; when it
+                      isn't, show nothing rather than a placeholder note — see
+                      EscalationCard.tsx's identical fix, applied here too. */}
+                  {entry.contact && (
+                    <p className="text-ink-soft">
+                      {entry.contact}
+                      {entry.verified !== "true" && (
+                        // Deliberately NOT text-urgent — ui-context.md reserves that
+                        // token for the escalation card alone ("never used for
+                        // anything else"). This app has no separate "warning" token,
+                        // so the unconfirmed qualifier is styled/labelled plainly
+                        // instead of color-coded, matching this card's calmer intent.
+                        <span className="ml-1 text-xs italic text-ink-soft">(unconfirmed)</span>
+                      )}
+                    </p>
                   )}
                 </li>
               ))}
