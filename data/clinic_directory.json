@@ -38,36 +38,36 @@
   {
     "id": 16,
     "category": "primary-care",
-    "name": "Lagos State University Teaching Hospital (LASUTH)",
-    "area": "Ikeja",
-    "contact": "Facility name is real and well-known — VERIFY current phone/address before demo",
+    "name": "Omodigbo Primary Health Centre",
+    "area": "Palm Avenue, off Olorunsogo Bus Stop, Mushin Local Government Area, Lagos State",
+    "contact": "08032230604",
     "verified": "name-only",
-    "services": []
+    "services": ["general_outpatient", "antenatal_care", "postnatal_care", "delivery", "vaccination", "paediatrics", "malaria_services"]
   },
   {
     "id": 17,
     "category": "maternal-care",
-    "name": "Lagos State University Teaching Hospital (LASUTH) — maternity ward",
-    "area": "Ikeja",
-    "contact": "Facility name is real and well-known — VERIFY current phone/address before demo",
+    "name": "Omodigbo Primary Health Centre",
+    "area": "Palm Avenue, off Olorunsogo Bus Stop, Mushin Local Government Area, Lagos State",
+    "contact": "08032230604",
     "verified": "name-only",
     "services": []
   },
   {
     "id": 18,
     "category": "child-health",
-    "name": "Lagos State University Teaching Hospital (LASUTH) — paediatrics",
-    "area": "Ikeja",
-    "contact": "Facility name is real and well-known — VERIFY current phone/address before demo",
+    "name": "Omodigbo Primary Health Centre",
+    "area": "Palm Avenue, off Olorunsogo Bus Stop, Mushin Local Government Area, Lagos State",
+    "contact": "08032230604",
     "verified": "name-only",
     "services": []
   },
   {
     "id": 19,
     "category": "malaria-treatment",
-    "name": "Lagos State University Teaching Hospital (LASUTH)",
-    "area": "Ikeja",
-    "contact": "Facility name is real and well-known — VERIFY current phone/address before demo",
+    "name": "Omodigbo Primary Health Centre",
+    "area": "Palm Avenue, off Olorunsogo Bus Stop, Mushin Local Government Area, Lagos State",
+    "contact": "08032230604",
     "verified": "name-only",
     "services": []
   },
@@ -103,7 +103,7 @@
     "category": "disclaimer",
     "name": "Directory scope note",
     "area": "n/a",
-    "contact": "This is a small, hand-curated seed (grown from 11 to 14 real entries as of 2026-08-28), not a comprehensive map — say so plainly in the pitch, don't imply full coverage. `services` values added 2026-08-28 are INFERRED from each entry's existing escalation `category`, not independently verified per facility the way `verified` tracks contact-detail confirmation — treat a listed service the same cautious way as an unconfirmed contact number. Entries #16-19 (2026-08-28) intentionally point the primary-care/maternal-care/child-health/malaria-treatment escalation categories at LASUTH rather than a real local PHC — a stopgap so no escalation category is ever left with zero directory entries, not a claim that a teaching hospital is the ideal first-line destination for these; a real, walkable PHC is still the better long-term answer (see progress-tracker.md Open Questions).",
+    "contact": "This is a small, hand-curated seed (grown from 11 to 14 real entries as of 2026-08-28), not a comprehensive map — say so plainly in the pitch, don't imply full coverage. `services` values added 2026-08-28 are INFERRED from each entry's existing escalation `category`, not independently verified per facility the way `verified` tracks contact-detail confirmation — treat a listed service the same cautious way as an unconfirmed contact number. Entries #16-19 briefly pointed the primary-care/maternal-care/child-health/malaria-treatment escalation categories at LASUTH as a stopgap (so no escalation category was ever left with zero directory entries) until a real local PHC could be sourced — resolved the same day: Omodigbo Primary Health Centre, Mushin (project-owner-supplied, first-hand knowledge; the Palm Avenue/Mushin location independently corroborated against Mushin LGA's own official site, which gives its own secretariat address as '82/84 Palm Avenue, Mushin' — but the specific street landmark and phone number rest on the project owner's own knowledge, not independently confirmed by an AI-run search, so `verified` stays 'name-only', same tier as LASUTH/LUTH) now fills those 4 rows and finally resolves SCOPE.md's original H0-2 checklist item.",
     "verified": "n/a",
     "services": []
   },
