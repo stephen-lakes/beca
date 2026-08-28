@@ -22,9 +22,10 @@ Single screen, no routing between pages. "Flow" here means UI states within that
 
 **Journey 1 — Normal question**
 1. User types a question → `POST /api/chat`.
-2. `lib/kb/search.ts` embeds the query and retrieves the top-k chunks.
-3. `lib/ai/client.ts` generates a structured JSON response (see `code-standards.md` for the schema).
-4. UI renders the answer bubble with its citation chip.
+2. If the message isn't self-contained on its own — a follow-up like "what are the causes" or "is it common here" (pronouns, "the causes," "what about," no clear subject) — it's resolved against recent conversation history into a self-contained query *before* retrieval or classification run (Spec 23). This resolved query, not the raw message, is what step 2 embeds and what the classifier evaluates; it's not treated as a standalone query in isolation. This is independent of Journey 4's clarification-answer tracking, which handles a narrower case (whether the user's message answers a clarifying question the app itself just asked) — the two mechanisms coexist without interfering.
+3. `lib/kb/search.ts` embeds the (resolved) query and retrieves the top-k chunks.
+4. `lib/ai/client.ts` generates a structured JSON response (see `code-standards.md` for the schema).
+5. UI renders the answer bubble with its citation chip.
 
 **Journey 2 — Escalation flip (the demo's wow moment)**
 1. Same thread as Journey 1; the user adds a follow-up containing a red-flag detail.
