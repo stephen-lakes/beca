@@ -23,6 +23,7 @@ import {
   type ClarificationResponse,
   type ServiceNavigationResponse,
   type PriorClarification,
+  type ConversationTurn,
 } from "@/lib/ai/schema"
 
 // Moved here from the now-deleted components/chat/mock-data.ts (Spec 08
@@ -69,6 +70,55 @@ function getPriorClarification(messages: ChatTurn[]): PriorClarification | null 
   return { originalMessage: precedingUser.text, questionsAsked: last.questions }
 }
 
+// Spec 24 Decision 2: matches lib/ai/schema.ts's ConversationTurnSchema
+// array .max(6) exactly — sending more than the server accepts would just
+// fail validation with a 400. If that server-side cap is ever retuned, this
+// constant needs to move with it; this is the only other place `6` appears.
+// Confirmed by the project owner as-is (a smaller window was proposed and
+// declined) — see context/specs/24-conversation-context-resolution-ui.md
+// Decision 2.
+const HISTORY_WINDOW = 6
+
+// Spec 24: flattens one ChatTurn down to the minimal {role, text} shape
+// lib/ai/schema.ts's ConversationTurnSchema expects. Same discriminant
+// order the per-turn render branch below already uses (escalated →
+// needs_clarification → service_navigation → plain ChatResponse) — the
+// context-resolution classifier (lib/ai/resolve-context.ts) only cares
+// about a turn's user-facing text, never which of the four response shapes
+// produced it.
+function toConversationTurn(turn: ChatTurn): ConversationTurn {
+  if (turn.role === "user") {
+    return { role: "user", text: turn.text }
+  }
+  const text = turn.escalated
+    ? turn.message
+    : turn.needs_clarification
+      ? turn.questions.join(" ")
+      : turn.service_navigation
+        ? turn.message
+        : turn.answer
+  return { role: "assistant", text }
+}
+
+// Spec 24 Decision 2: derives the bounded recent-history window from the
+// thread's own state, the same "client supplies back what it already
+// rendered, server stays stateless" pattern getPriorClarification (Spec 18)
+// already established. Same timing contract too: only ever meaningful when
+// called with `messages` as it stood immediately before a new user turn is
+// appended (see handleSubmit). Runs over every turn regardless of type —
+// deliberately not filtering out escalation/clarification/service-navigation
+// turns (Decision 6): they're still real conversational context, and the
+// resolver is already trusted to judge relevance, so the client's job is
+// supplying raw material, not pre-filtering it.
+function getRecentHistory(messages: ChatTurn[]): ConversationTurn[] {
+  // ConversationTurnSchema requires non-empty text (min(1)) — filtered
+  // defensively at this request-shaping boundary rather than trusted blindly.
+  return messages
+    .map(toConversationTurn)
+    .filter((turn) => turn.text.length > 0)
+    .slice(-HISTORY_WINDOW)
+}
+
 // A single global slot, not a per-turn field (Spec 08 Decision 7) — this app
 // only ever has one request in flight at a time (see Decision 9 below).
 type RequestStatus = { kind: "idle" } | { kind: "pending" } | { kind: "error"; message: string }
@@ -105,6 +155,12 @@ export function ChatThread() {
   // happened. Recomputing it at retry time would silently lose the
   // clarification context on exactly the turn where losing it matters most.
   const [lastPriorClarification, setLastPriorClarification] = useState<PriorClarification | null>(null)
+  // Spec 24 Decision 3: stored alongside lastMessage/lastPriorClarification,
+  // for the identical reason — getRecentHistory() can only be correctly
+  // computed from `messages` *before* the new user turn is optimistically
+  // appended, but the retry button below calls requestAnswer again after
+  // that append already happened.
+  const [lastRecentHistory, setLastRecentHistory] = useState<ConversationTurn[]>([])
 
   // Spec 10 Decision 8: extracted out of handleSubmit so both the form
   // submit and ErrorState's retry button share the exact same fetch/
@@ -112,15 +168,22 @@ export function ChatThread() {
   // Spec 18 Decision 9: gained a second parameter, threaded straight into
   // the POST body — Spec 17's ChatRequestSchema already accepts this field
   // as nullable().optional(), so sending an explicit null on every
-  // non-clarification turn is valid and simplest.
-  async function requestAnswer(message: string, priorClarification: PriorClarification | null) {
+  // non-clarification turn is valid and simplest. Spec 24 Decision 4: gained
+  // a third parameter, recentHistory — Spec 23's ChatRequestSchema already
+  // accepts this field as .max(6).optional(), so always sending the
+  // (possibly empty) array is valid and simplest, same reasoning.
+  async function requestAnswer(
+    message: string,
+    priorClarification: PriorClarification | null,
+    recentHistory: ConversationTurn[],
+  ) {
     setStatus({ kind: "pending" })
 
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, priorClarification }),
+        body: JSON.stringify({ message, priorClarification, recentHistory }),
       })
 
       if (!res.ok) {
@@ -180,16 +243,21 @@ export function ChatThread() {
     // racing the disabled-prop update on the input/button.
     if (!trimmed || status.kind === "pending") return
 
-    // Spec 18 Decision 7: computed from `messages` as it stands right now —
-    // before the new user turn below is appended, per getPriorClarification's
-    // own contract.
+    // Spec 18 Decision 7 / Spec 24 Decision 2: both computed from `messages`
+    // as it stands right now — before the new user turn below is appended,
+    // per getPriorClarification's/getRecentHistory's own contract. Two
+    // separate, uncoupled helpers reading the same pre-append state (Spec 24
+    // Decision 7) — recentHistory and priorClarification are independent
+    // fields that coexist on the same request without interfering.
     const priorClarification = getPriorClarification(messages)
+    const recentHistory = getRecentHistory(messages)
 
     setMessages((prev) => [...prev, { role: "user", text: trimmed }])
     setLastMessage(trimmed)
     setLastPriorClarification(priorClarification)
+    setLastRecentHistory(recentHistory)
     setInputValue("")
-    await requestAnswer(trimmed, priorClarification)
+    await requestAnswer(trimmed, priorClarification, recentHistory)
   }
 
   return (
@@ -256,7 +324,7 @@ export function ChatThread() {
               {status.kind === "error" && (
                 <ErrorState
                   message={status.message}
-                  onRetry={() => requestAnswer(lastMessage, lastPriorClarification)}
+                  onRetry={() => requestAnswer(lastMessage, lastPriorClarification, lastRecentHistory)}
                 />
               )}
             </div>
