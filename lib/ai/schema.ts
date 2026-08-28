@@ -348,3 +348,33 @@ export const PriorClarificationSchema = z.object({
   questionsAsked: z.array(z.string().min(1)).min(1).max(2),
 })
 export type PriorClarification = z.infer<typeof PriorClarificationSchema>
+
+// --- Spec 23: conversation context resolution ---
+// context/specs/23-conversation-context-resolution.md
+
+// The request body's optional field carrying a bounded window of the
+// thread's own recent turns back to the server (Decision 2). Same
+// stateless-server contract PriorClarificationSchema above already
+// established: nothing here is ever persisted, only read from the incoming
+// request. Assistant turns are flattened to plain text by the client
+// (Spec 24) regardless of which of the four response shapes produced them —
+// this module doesn't care which shape a turn came from, only its text.
+export const ConversationTurnSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  text: z.string().min(1).max(2000),
+})
+export type ConversationTurn = z.infer<typeof ConversationTurnSchema>
+
+// What the context-resolution classifier itself is asked to produce.
+// needs_resolution gates whether resolved_query is ever used — see
+// lib/ai/resolve-context.ts's Decision 3 substitution rule: a
+// self-contained message's own resolved_query is always discarded, never
+// trusted even though presumably near-identical — the same "don't let the
+// model touch what doesn't need touching" reasoning Spec 19 Decision 3
+// applied to retrieval query expansion.
+export const ResolvedContextSchema = z.object({
+  needs_resolution: z.boolean(),
+  resolved_query: z.string().min(1),
+  reasoning: z.string(),
+})
+export type ResolvedContext = z.infer<typeof ResolvedContextSchema>

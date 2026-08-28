@@ -24,6 +24,21 @@
  * response shape, status code, or user-facing behavior changes as a result —
  * this is diagnostic-only, and never logs raw message text (hard invariant
  * 4). See context/specs/19-hybrid-retrieval-fallback-diagnostics.md Decision 4.
+ *
+ * Spec 23 adds conversation context resolution ahead of everything else: a
+ * non-self-contained follow-up (e.g. "what are the causes") is resolved
+ * against the client-supplied recentHistory into a standalone query before
+ * classifyUrgency, classifyCapability, or retrieval ever see it. The
+ * deterministic red-flag keyword check still always runs on the raw,
+ * verbatim message (pure substring matching — context can't help or hurt
+ * it), but the AI urgency classifier now reasons about the resolved query
+ * too, not just the capability router/RAG path — confirmed necessary by
+ * live testing during implementation: keeping the resolved query out of
+ * classifyUrgency meant an ambiguous-but-benign follow-up like "what are
+ * the causes" could still trip the classifier's own needs_clarification
+ * branch (Spec 17) before resolution ever ran, defeating the fix roughly a
+ * third of the time in testing. See
+ * context/specs/23-conversation-context-resolution.md Decision 1.
  */
 
 import { NextResponse } from "next/server"
@@ -32,6 +47,7 @@ import { searchKb, type RetrievedChunk } from "@/lib/kb/search"
 import { generateAnswer } from "@/lib/ai/client"
 import { classifyUrgency } from "@/lib/ai/classify"
 import { classifyCapability } from "@/lib/ai/classify-capability"
+import { resolveQuery } from "@/lib/ai/resolve-context"
 import { checkRedFlagKeywords, findDirectoryEntry, findByService } from "@/lib/directory/lookup"
 import { findPreparationChecklist, formatChecklistAsChunkContent } from "@/lib/preparation/lookup"
 import {
@@ -40,6 +56,7 @@ import {
   ClarificationResponseSchema,
   ServiceNavigationResponseSchema,
   PriorClarificationSchema,
+  ConversationTurnSchema,
   NO_GROUNDED_INFO_MESSAGE,
   NO_GROUNDED_INFO_MESSAGE_SIMPLE,
   NO_GROUNDED_INFO_MESSAGE_PIDGIN,
@@ -101,6 +118,11 @@ const ChatRequestSchema = z.object({
   // question(s). The server stays fully stateless; nothing here is ever
   // persisted, only read for this single request.
   priorClarification: PriorClarificationSchema.nullable().optional(),
+  // Spec 23 Decision 2: a bounded window of the thread's own recent turns,
+  // client-supplied, never server-persisted — same stateless-server contract
+  // as priorClarification above. Independent of it (Decision 8): both may be
+  // present on the same request without interfering with each other.
+  recentHistory: z.array(ConversationTurnSchema).max(6).optional(),
 })
 
 // Decision 6: take the higher severity when both signals fired. Only ever
@@ -142,15 +164,38 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  const { message, priorClarification } = parsedRequest.data
+  const { message, priorClarification, recentHistory } = parsedRequest.data
+
+  // Spec 23: resolve a non-self-contained follow-up (e.g. "what are the
+  // causes") against the client-supplied recentHistory into a standalone
+  // query, before anything else runs — including the urgency classifier
+  // below. Skipped (no LLM call at all) when recentHistory is absent —
+  // resolvedMessage is just message unchanged in that case. See
+  // context/specs/23-conversation-context-resolution.md Decision 1 for why
+  // this runs ahead of the safety layer rather than after it (the initial,
+  // more conservative design), and the file header comment above for the
+  // live-testing finding that made this necessary.
+  const { resolvedMessage, outcome: contextResolutionOutcome } = await resolveQuery(message, recentHistory)
+  console.log(
+    "context_resolution_outcome:",
+    contextResolutionOutcome,
+    "— message length:",
+    message.length,
+    "resolved length:",
+    resolvedMessage.length,
+  )
 
   // Decision 2 (Spec 06): always run both checks, in parallel, on every
   // message — never short-circuited by each other. Spec 17: classifyUrgency
   // also takes priorClarification, folding it into a combined-context,
-  // final-round prompt when present (lib/ai/prompts.ts).
+  // final-round prompt when present (lib/ai/prompts.ts). Spec 23: checkRedFlagKeywords
+  // stays on the raw, verbatim message — a deterministic substring match
+  // that context can't help or hurt — but classifyUrgency now takes
+  // resolvedMessage, not message, so it can correctly judge urgency on a
+  // resolved follow-up instead of an ambiguous fragment.
   const [redFlagMatch, aiClassification] = await Promise.all([
     checkRedFlagKeywords(message),
-    classifyUrgency(message, priorClarification),
+    classifyUrgency(resolvedMessage, priorClarification),
   ])
 
   if (!aiClassification) {
@@ -233,7 +278,10 @@ export async function POST(request: Request) {
   // routing/topic classifier, never a second safety mechanism (Part 4): the
   // unmodified safety branch above already ran, unconditionally, on every
   // message before this point is ever reached.
-  const capabilityClassification = await classifyCapability(message)
+  //
+  // Spec 23: takes resolvedMessage, not the raw message — see the comment
+  // above this block.
+  const capabilityClassification = await classifyCapability(resolvedMessage)
 
   if (!capabilityClassification) {
     // Classifier failure degrades to the default RAG path below, the same
@@ -331,7 +379,7 @@ export async function POST(request: Request) {
         sourceUrl: null,
       }
 
-      const result = await generateAnswer(message, [syntheticChunk])
+      const result = await generateAnswer(resolvedMessage, [syntheticChunk])
       if (result) {
         console.log(
           "retrieval_outcome: healthcare_preparation — message length:",
@@ -365,7 +413,7 @@ export async function POST(request: Request) {
   // identical to the existing generateAnswer-failure path (no new behavior).
   let chunks: RetrievedChunk[]
   try {
-    chunks = await searchKb(message)
+    chunks = await searchKb(resolvedMessage)
   } catch (error) {
     console.error(
       "searchKb failed for message of length:",
@@ -401,7 +449,7 @@ export async function POST(request: Request) {
     )
   }
 
-  const result = await generateAnswer(message, chunks)
+  const result = await generateAnswer(resolvedMessage, chunks)
 
   if (!result) {
     // Spec 10: logs message.length, never the raw message text — see

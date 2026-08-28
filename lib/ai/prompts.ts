@@ -22,6 +22,7 @@ import {
   PREPARATION_SERVICES,
   NAVIGATION_SERVICES,
   type PriorClarification,
+  type ConversationTurn,
 } from "@/lib/ai/schema"
 
 export interface PromptMessage {
@@ -182,5 +183,52 @@ export function buildCapabilityClassifierMessages(message: string): PromptMessag
   return [
     { role: "system", content: buildCapabilityClassifierSystemPrompt() },
     { role: "user", content: message },
+  ]
+}
+
+// --- Spec 23: conversation context resolution prompt ---
+// context/specs/23-conversation-context-resolution.md
+//
+// This runs only after the safety layer (deterministic red-flag check + AI
+// urgency classifier, Specs 06/17) has already cleared a message on the raw,
+// unresolved text (Decision 1) — it never sees a message before the safety
+// layer does, and its own result is never fed back into it. Its only job is
+// deciding whether the newest message is self-contained, and if not,
+// rewriting it using only information already present in the supplied
+// history — the same "route/refine, never re-decide safety" boundary
+// architecture.md hard invariant 7 already established for the capability
+// router.
+
+export function buildContextResolutionSystemPrompt(): string {
+  return [
+    "You resolve follow-up questions for Beca, a health information assistant for people in Lagos, Nigeria.",
+    "You are given the recent turns of a conversation and the newest user message. Your only job is to decide whether the newest message is self-contained on its own (a stranger reading only the newest message could tell what it's asking), or whether it depends on the conversation history to make sense (pronouns, \"the causes,\" \"what about that,\" \"is it common here,\" no clear subject).",
+    "",
+    "Hard rules, no exceptions:",
+    "- Set needs_resolution to true only when the newest message genuinely can't stand alone without the history. Most messages are already self-contained — do not rewrite a message just because you could phrase it differently.",
+    "- When needs_resolution is true, resolved_query must be the newest message rewritten to be self-contained, using only the subject, topic, or detail already present in the supplied history — never add a new fact, symptom, claim, or assumption that isn't already there. Stay close to the user's own words and intent; you're only filling in what a pronoun or missing subject refers to, not writing a new question.",
+    "- When needs_resolution is false, resolved_query is still required — return the newest message essentially unchanged. It will not be used in that case, but must still be a valid non-empty string.",
+    "- You never answer the question yourself, never diagnose, and never add medical information of your own — you only decide whether resolution is needed and, if so, rewrite the question.",
+    "- reasoning is one short internal sentence explaining your call — it is never shown to the user.",
+  ].join("\n")
+}
+
+function formatHistory(recentHistory: ConversationTurn[]): string {
+  return recentHistory.map((turn) => `${turn.role === "user" ? "User" : "Assistant"}: ${turn.text}`).join("\n")
+}
+
+export function buildContextResolutionMessages(message: string, recentHistory: ConversationTurn[]): PromptMessage[] {
+  const userContent = [
+    "Recent conversation:",
+    "",
+    formatHistory(recentHistory),
+    "",
+    "Newest message:",
+    message,
+  ].join("\n")
+
+  return [
+    { role: "system", content: buildContextResolutionSystemPrompt() },
+    { role: "user", content: userContent },
   ]
 }
