@@ -24,7 +24,7 @@
     "area": "Ikeja",
     "contact": "Facility name is real and well-known — VERIFY current phone/address before demo",
     "verified": "name-only",
-    "services": ["general_outpatient", "laboratory"]
+    "services": ["general_outpatient", "laboratory", "antenatal_care", "postnatal_care", "delivery", "vaccination", "paediatrics", "malaria_services"]
   },
   {
     "id": 4,
@@ -33,34 +33,43 @@
     "area": "Lagos Island",
     "contact": "Facility name is real and well-known — VERIFY current phone/address before demo",
     "verified": "name-only",
-    "services": ["general_outpatient", "laboratory"]
+    "services": ["general_outpatient", "laboratory", "antenatal_care", "postnatal_care", "delivery", "vaccination", "paediatrics", "malaria_services"]
   },
   {
-    "id": 5,
+    "id": 16,
     "category": "primary-care",
-    "name": "[Nearest Lagos State Primary Health Centre to your chosen demo neighbourhood]",
-    "area": "Pick one: Mushin / Ajegunle / Yaba / other",
-    "contact": "FILL IN — search \"Lagos State PHC [area]\"",
-    "verified": false,
-    "services": ["general_outpatient"]
+    "name": "Lagos State University Teaching Hospital (LASUTH)",
+    "area": "Ikeja",
+    "contact": "Facility name is real and well-known — VERIFY current phone/address before demo",
+    "verified": "name-only",
+    "services": []
   },
   {
-    "id": 6,
+    "id": 17,
     "category": "maternal-care",
-    "name": "Antenatal clinic — same PHC as #5, or LASUTH/General Hospital maternity ward",
-    "area": "Same as chosen PHC",
-    "contact": "FILL IN",
-    "verified": false,
-    "services": ["antenatal_care", "postnatal_care", "delivery"]
+    "name": "Lagos State University Teaching Hospital (LASUTH) — maternity ward",
+    "area": "Ikeja",
+    "contact": "Facility name is real and well-known — VERIFY current phone/address before demo",
+    "verified": "name-only",
+    "services": []
   },
   {
-    "id": 7,
+    "id": 18,
     "category": "child-health",
-    "name": "Immunization clinic — same PHC as #5 (routine immunization is typically PHC-based in Nigeria)",
-    "area": "Same as chosen PHC",
-    "contact": "FILL IN",
-    "verified": false,
-    "services": ["vaccination", "paediatrics"]
+    "name": "Lagos State University Teaching Hospital (LASUTH) — paediatrics",
+    "area": "Ikeja",
+    "contact": "Facility name is real and well-known — VERIFY current phone/address before demo",
+    "verified": "name-only",
+    "services": []
+  },
+  {
+    "id": 19,
+    "category": "malaria-treatment",
+    "name": "Lagos State University Teaching Hospital (LASUTH)",
+    "area": "Ikeja",
+    "contact": "Facility name is real and well-known — VERIFY current phone/address before demo",
+    "verified": "name-only",
+    "services": []
   },
   {
     "id": 8,
@@ -81,15 +90,6 @@
     "services": ["family_planning"]
   },
   {
-    "id": 10,
-    "category": "malaria-treatment",
-    "name": "Same PHC as #5 (first-line malaria testing/treatment is typically PHC-based)",
-    "area": "Same as chosen PHC",
-    "contact": "FILL IN",
-    "verified": false,
-    "services": ["malaria_services"]
-  },
-  {
     "id": 11,
     "category": "general",
     "name": "[Add 1–2 real pharmacies or clinics you personally know near the demo neighbourhood]",
@@ -103,7 +103,7 @@
     "category": "disclaimer",
     "name": "Directory scope note",
     "area": "n/a",
-    "contact": "This is a 12-entry hackathon-scale seed, not a comprehensive map — say so plainly in the pitch, don't imply full coverage. `services` values added 2026-08-28 are INFERRED from each entry's existing escalation `category`, not independently verified per facility the way `verified` tracks contact-detail confirmation — treat a listed service the same cautious way as an unconfirmed contact number.",
+    "contact": "This is a small, hand-curated seed (grown from 11 to 14 real entries as of 2026-08-28), not a comprehensive map — say so plainly in the pitch, don't imply full coverage. `services` values added 2026-08-28 are INFERRED from each entry's existing escalation `category`, not independently verified per facility the way `verified` tracks contact-detail confirmation — treat a listed service the same cautious way as an unconfirmed contact number. Entries #16-19 (2026-08-28) intentionally point the primary-care/maternal-care/child-health/malaria-treatment escalation categories at LASUTH rather than a real local PHC — a stopgap so no escalation category is ever left with zero directory entries, not a claim that a teaching hospital is the ideal first-line destination for these; a real, walkable PHC is still the better long-term answer (see progress-tracker.md Open Questions).",
     "verified": "n/a",
     "services": []
   },
