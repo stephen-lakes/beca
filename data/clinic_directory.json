@@ -5,7 +5,8 @@
     "name": "Lagos State emergency / ambulance service",
     "area": "Lagos-wide",
     "contact": "VERIFY — see https://lagosstate.gov.ng/emergency-numbers/ or LASEMA https://lasema.lagosstate.gov.ng/contact-us-2/",
-    "verified": false
+    "verified": false,
+    "services": ["emergency"]
   },
   {
     "id": 2,
@@ -13,7 +14,8 @@
     "name": "Nigeria unified emergency number (commonly cited as 112)",
     "area": "National",
     "contact": "VERIFY current/active status before putting this on screen",
-    "verified": false
+    "verified": false,
+    "services": ["emergency"]
   },
   {
     "id": 3,
@@ -21,7 +23,8 @@
     "name": "Lagos State University Teaching Hospital (LASUTH)",
     "area": "Ikeja",
     "contact": "Facility name is real and well-known — VERIFY current phone/address before demo",
-    "verified": "name-only"
+    "verified": "name-only",
+    "services": ["general_outpatient", "laboratory"]
   },
   {
     "id": 4,
@@ -29,7 +32,8 @@
     "name": "General Hospital Lagos",
     "area": "Lagos Island",
     "contact": "Facility name is real and well-known — VERIFY current phone/address before demo",
-    "verified": "name-only"
+    "verified": "name-only",
+    "services": ["general_outpatient", "laboratory"]
   },
   {
     "id": 5,
@@ -37,7 +41,8 @@
     "name": "[Nearest Lagos State Primary Health Centre to your chosen demo neighbourhood]",
     "area": "Pick one: Mushin / Ajegunle / Yaba / other",
     "contact": "FILL IN — search \"Lagos State PHC [area]\"",
-    "verified": false
+    "verified": false,
+    "services": ["general_outpatient"]
   },
   {
     "id": 6,
@@ -45,7 +50,8 @@
     "name": "Antenatal clinic — same PHC as #5, or LASUTH/General Hospital maternity ward",
     "area": "Same as chosen PHC",
     "contact": "FILL IN",
-    "verified": false
+    "verified": false,
+    "services": ["antenatal_care", "postnatal_care", "delivery"]
   },
   {
     "id": 7,
@@ -53,7 +59,8 @@
     "name": "Immunization clinic — same PHC as #5 (routine immunization is typically PHC-based in Nigeria)",
     "area": "Same as chosen PHC",
     "contact": "FILL IN",
-    "verified": false
+    "verified": false,
+    "services": ["vaccination", "paediatrics"]
   },
   {
     "id": 8,
@@ -61,7 +68,8 @@
     "name": "Federal Neuro-Psychiatric Hospital, Yaba",
     "area": "Yaba",
     "contact": "Facility is real (fnphyaba.gov.ng) — VERIFY current phone number before demo",
-    "verified": "name-only"
+    "verified": "name-only",
+    "services": ["mental_health"]
   },
   {
     "id": 9,
@@ -69,7 +77,8 @@
     "name": "Marie Stopes Nigeria — Lagos clinic",
     "area": "Lagos (confirm nearest branch)",
     "contact": "Organisation is real (mariestopes.org.ng) — VERIFY nearest branch + phone",
-    "verified": "name-only"
+    "verified": "name-only",
+    "services": ["family_planning"]
   },
   {
     "id": 10,
@@ -77,7 +86,8 @@
     "name": "Same PHC as #5 (first-line malaria testing/treatment is typically PHC-based)",
     "area": "Same as chosen PHC",
     "contact": "FILL IN",
-    "verified": false
+    "verified": false,
+    "services": ["malaria_services"]
   },
   {
     "id": 11,
@@ -85,14 +95,43 @@
     "name": "[Add 1–2 real pharmacies or clinics you personally know near the demo neighbourhood]",
     "area": "TBD",
     "contact": "FILL IN",
-    "verified": false
+    "verified": false,
+    "services": ["general_outpatient"]
   },
   {
     "id": 12,
     "category": "disclaimer",
     "name": "Directory scope note",
     "area": "n/a",
-    "contact": "This is a 12-entry hackathon-scale seed, not a comprehensive map — say so plainly in the pitch, don't imply full coverage.",
-    "verified": "n/a"
+    "contact": "This is a 12-entry hackathon-scale seed, not a comprehensive map — say so plainly in the pitch, don't imply full coverage. `services` values added 2026-08-28 are INFERRED from each entry's existing escalation `category`, not independently verified per facility the way `verified` tracks contact-detail confirmation — treat a listed service the same cautious way as an unconfirmed contact number.",
+    "verified": "n/a",
+    "services": []
+  },
+  {
+    "id": 13,
+    "category": "general-tertiary",
+    "name": "Lagos University Teaching Hospital (LUTH) — Idi-Araba",
+    "area": "Idi-Araba, Ishaga Road, Lagos",
+    "contact": "VERIFY — address/phone sourced informally (web search, project-owner-supplied 2026-08-28), not confirmed against LUTH's own site or by phone",
+    "verified": "name-only",
+    "services": ["general_outpatient", "laboratory", "imaging", "dental", "paediatrics", "emergency"]
+  },
+  {
+    "id": 14,
+    "category": "general-tertiary",
+    "name": "LUTH Harvey Road Annex (Dermatology / Psychiatry Clinic)",
+    "area": "Harvey Road, Yaba",
+    "contact": "VERIFY — address/phone sourced informally (web search, project-owner-supplied 2026-08-28), not confirmed against LUTH's own site or by phone",
+    "verified": "name-only",
+    "services": ["mental_health"]
+  },
+  {
+    "id": 15,
+    "category": "general-tertiary",
+    "name": "Medserve-LUTH Cancer Centre (MLCC)",
+    "area": "Inside LUTH, Idi-Araba, Surulere, Lagos — hours not independently confirmed (project-owner-supplied: Mon–Fri 8:00 AM–5:00 PM, closed weekends/public holidays)",
+    "contact": "0700 674 2588 or 0903 000 9438 (WhatsApp: 0903 000 9436) — phone numbers independently confirmed live against the organisation's own site, https://nlcc.ng, on 2026-08-28",
+    "verified": true,
+    "services": ["oncology"]
   }
 ]

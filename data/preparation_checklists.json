@@ -1,0 +1,153 @@
+[
+  {
+    "service": "general_clinic_visit",
+    "title": "Preparing for a general clinic visit",
+    "preparation_items": [
+      "Write down your main symptom or concern in one or two sentences, including when it started and whether it's getting better, worse, or staying the same.",
+      "List any medicines you are currently taking, including the dose if you know it.",
+      "Bring a valid ID and, if you have one, your hospital or clinic card or folder number.",
+      "Bring any past test results, scan reports, or prescriptions related to this visit.",
+      "Write down any questions you want to ask, so you don't forget them once you're with the health worker.",
+      "Arrive early if you can — some clinics see patients in the order they arrive, not strictly by appointment time."
+    ],
+    "source_type": "team-authored",
+    "clinical_review_status": "drafted_pending_clinical_review",
+    "review_date": "2026-08-28",
+    "variability_note": "Exactly what's needed can vary by clinic — always confirm requirements with the facility directly before you go."
+  },
+  {
+    "service": "antenatal_care",
+    "title": "Preparing for an antenatal appointment",
+    "preparation_items": [
+      "Bring your antenatal card or maternal health record if you already have one — if this is your first visit, bring your ID instead.",
+      "Note your last menstrual period date, if known, and how many weeks pregnant you believe you are.",
+      "List any symptoms you've noticed — swelling, headaches, vision changes, unusual pain — even mild ones, so the health worker can check them.",
+      "List any medicines or supplements you are currently taking.",
+      "Bring results of any earlier pregnancy scans or lab tests, if you have them.",
+      "Write down any questions about your pregnancy, diet, or upcoming appointments."
+    ],
+    "source_type": "team-authored",
+    "clinical_review_status": "drafted_pending_clinical_review",
+    "review_date": "2026-08-28",
+    "variability_note": "Antenatal schedules and required tests vary by facility and by stage of pregnancy — always confirm with your antenatal clinic directly."
+  },
+  {
+    "service": "postnatal_care",
+    "title": "Preparing for a postnatal appointment",
+    "preparation_items": [
+      "Bring your maternal and newborn health record or antenatal card if you have one.",
+      "Note how many days or weeks after delivery this visit is, and how the delivery went (vaginal or caesarean, any complications).",
+      "Note anything you want checked for yourself — bleeding, pain, mood, feeding difficulties — and for the baby — feeding, weight, jaundice, umbilical cord healing.",
+      "Bring the baby's newborn/vaccination card if one was already started.",
+      "Write down any questions about recovery, breastfeeding, or contraception."
+    ],
+    "source_type": "team-authored",
+    "clinical_review_status": "drafted_pending_clinical_review",
+    "review_date": "2026-08-28",
+    "variability_note": "The exact postnatal check-up schedule and what's checked at each visit can vary by facility — always confirm with your clinic directly."
+  },
+  {
+    "service": "child_immunization",
+    "title": "Preparing to take a child for vaccination",
+    "preparation_items": [
+      "Bring the child's immunization/vaccination card — this is the most important thing to bring, so the clinic can record what's given and know what's due.",
+      "If this is the first vaccination, bring the child's birth record and your own ID.",
+      "Note the child's current weight and age if you know them, and mention any recent illness, fever, or allergic reaction to a past vaccine.",
+      "Dress the child in clothing that makes it easy to access the arm or thigh.",
+      "It's normal for a child to be fussy after a vaccine — ask the health worker what reactions are expected and what would need a follow-up visit."
+    ],
+    "source_type": "team-authored",
+    "clinical_review_status": "drafted_pending_clinical_review",
+    "review_date": "2026-08-28",
+    "variability_note": "Vaccination schedules and available vaccines can vary by facility and by programme — always confirm the current schedule with your clinic directly."
+  },
+  {
+    "service": "adult_vaccination",
+    "title": "Preparing for an adult vaccination visit",
+    "preparation_items": [
+      "Bring your ID and, if you have one, a record of vaccines you've previously received.",
+      "Mention any current illness, fever, pregnancy, or known allergies — especially any past allergic reaction to a vaccine.",
+      "List any medicines you're currently taking, particularly anything affecting your immune system.",
+      "Ask which vaccine you're receiving and what side effects are normal versus what would need follow-up care."
+    ],
+    "source_type": "team-authored",
+    "clinical_review_status": "drafted_pending_clinical_review",
+    "review_date": "2026-08-28",
+    "variability_note": "Which vaccines are recommended or available can vary by facility, age, and health status — always confirm with your clinic directly."
+  },
+  {
+    "service": "laboratory_testing",
+    "title": "Preparing for a laboratory test",
+    "preparation_items": [
+      "Ask in advance whether the specific test requires fasting (not eating or drinking, other than water, for a number of hours beforehand) — this varies by test.",
+      "Bring the lab request form or referral note from your health worker, if you were given one.",
+      "Bring your ID and any previous results for the same test, so changes over time can be compared.",
+      "Mention any medicines or supplements you're taking, since some can affect certain results.",
+      "Wear clothing that makes it easy to access your arm if the test needs a blood sample."
+    ],
+    "source_type": "team-authored",
+    "clinical_review_status": "drafted_pending_clinical_review",
+    "review_date": "2026-08-28",
+    "variability_note": "Preparation requirements (especially fasting) differ a lot by the specific test — always confirm with the laboratory or the health worker who ordered it before your appointment."
+  },
+  {
+    "service": "imaging",
+    "title": "Preparing for an imaging appointment (X-ray, ultrasound, scan)",
+    "preparation_items": [
+      "Bring the referral or request form from your health worker.",
+      "Ask in advance if the specific scan needs preparation — some ultrasounds need a full bladder, some scans need fasting, and this varies by scan type.",
+      "Tell the facility if you are, or might be, pregnant before any X-ray or CT scan.",
+      "Wear clothing without metal (zips, buttons, jewellery) if you can, since some scans require removing metal objects.",
+      "Bring any previous scan images or reports for comparison, if you have them."
+    ],
+    "source_type": "team-authored",
+    "clinical_review_status": "drafted_pending_clinical_review",
+    "review_date": "2026-08-28",
+    "variability_note": "Preparation needed is very specific to the type of scan — always confirm directly with the imaging facility before your appointment."
+  },
+  {
+    "service": "dental_visit",
+    "title": "Preparing for a dental appointment",
+    "preparation_items": [
+      "Note when your tooth or mouth problem started, and describe the pain or issue as specifically as you can.",
+      "List any medicines you're taking and any allergies, especially to local anaesthetic or antibiotics.",
+      "Mention any conditions like diabetes, heart problems, or pregnancy, since these can affect dental treatment.",
+      "Eat a light meal beforehand if you can, especially if you expect a procedure — ask the clinic if fasting is needed for your specific treatment.",
+      "Bring your ID and any previous dental records if you have them."
+    ],
+    "source_type": "team-authored",
+    "clinical_review_status": "drafted_pending_clinical_review",
+    "review_date": "2026-08-28",
+    "variability_note": "What's needed can vary depending on the specific dental procedure — always confirm with the dental clinic directly."
+  },
+  {
+    "service": "chronic_disease_follow_up",
+    "title": "Preparing for a chronic disease follow-up appointment",
+    "preparation_items": [
+      "Bring your ongoing medical record, folder, or care card for this condition.",
+      "List all medicines you're currently taking for this and any other condition, including doses if you know them.",
+      "If you monitor anything at home (blood pressure, blood sugar, weight), bring your recent readings or a log of them.",
+      "Note any new or worsening symptoms since your last visit, and anything that's made your condition harder to manage.",
+      "Write down questions about your treatment plan, side effects, or lifestyle changes."
+    ],
+    "source_type": "team-authored",
+    "clinical_review_status": "drafted_pending_clinical_review",
+    "review_date": "2026-08-28",
+    "variability_note": "What's tracked and reviewed depends on your specific condition and care plan — always confirm with your regular health worker directly."
+  },
+  {
+    "service": "specialist_consultation",
+    "title": "Preparing for a specialist consultation",
+    "preparation_items": [
+      "Bring the referral letter from the health worker who referred you, if you have one.",
+      "Bring your full medical history related to this issue, including past test results, scans, and prescriptions.",
+      "List all medicines you're currently taking.",
+      "Write a short summary of your main concern, when it started, and what treatments you've already tried.",
+      "Write down your questions in advance, since specialist appointments can be short and focused."
+    ],
+    "source_type": "team-authored",
+    "clinical_review_status": "drafted_pending_clinical_review",
+    "review_date": "2026-08-28",
+    "variability_note": "What a specialist needs can vary a lot by specialty — always confirm with the referring health worker or the specialist's clinic directly."
+  }
+]

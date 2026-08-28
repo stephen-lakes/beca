@@ -10,8 +10,14 @@
 export function DisclaimerBar() {
   return (
     <div className="border-t border-line px-4 py-2 text-center text-xs text-ink-soft">
-      <p>This is general health information, not a diagnosis or treatment plan. Always see a qualified health worker for anything specific to you.</p>
-      <p>No login. Nothing you type is saved after this session.</p>
+      {/* Same mx-auto max-w-3xl column as Header.tsx and ChatThread.tsx's
+          thread/input (project-owner polish pass, post-Spec-12) — the bar
+          itself stays full width, only its text column aligns with the rest
+          of the app's content on a wide/laptop viewport. */}
+      <div className="mx-auto w-full max-w-3xl">
+        <p>This is general health information, not a diagnosis or treatment plan. Always see a qualified health worker for anything specific to you.</p>
+        <p>No login. Nothing you type is saved after this session.</p>
+      </div>
     </div>
   )
 }

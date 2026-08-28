@@ -121,6 +121,10 @@ async function requestStructuredAnswer(query: string, chunks: RetrievedChunk[]):
     // path (real generation) never asks a clarifying question itself, that's
     // the classifier's job (lib/ai/classify.ts), so it's always false here.
     needs_clarification: false,
+    // 2026-08-28: same reasoning again, distinguishing from
+    // ServiceNavigationResponseSchema — this path never does navigation
+    // lookups, that's app/api/chat/route.ts's job.
+    service_navigation: false,
     grounded: parsed.grounded,
     answer: parsed.answer,
     citations,

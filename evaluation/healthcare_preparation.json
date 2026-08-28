@@ -1,0 +1,142 @@
+[
+  {
+    "question": "What should I bring to a clinic appointment?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "general_clinic_visit",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What should I prepare before seeing a doctor?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "general_clinic_visit",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How should I prepare for an antenatal appointment?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "antenatal_care",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What should I bring to my first pregnancy check-up?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "antenatal_care",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What should I bring to my postnatal check-up after delivery?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "postnatal_care",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What should I bring when taking my child for vaccination?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "child_immunization",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How do I prepare my baby for their immunization appointment?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "child_immunization",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What should I know before getting a vaccine as an adult?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "adult_vaccination",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How should I prepare for a laboratory blood test?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "laboratory_testing",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "Do I need to fast before a lab test?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "laboratory_testing",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How should I prepare for an ultrasound scan?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "imaging",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What should I do before an X-ray?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "imaging",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How should I prepare for a dental appointment?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "dental_visit",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What should I bring to my diabetes follow-up appointment?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "chronic_disease_follow_up",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What information should I bring to a follow-up appointment for my hypertension?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "chronic_disease_follow_up",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How should I prepare for a specialist consultation?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "specialist_consultation",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What should I bring when I've been referred to a specialist?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "specialist_consultation",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What questions should I ask my doctor during an appointment?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "general_clinic_visit",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What should I do to prepare for my child's next vaccination visit?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "child_immunization",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What should I bring to a hospital visit?",
+    "expected_capability": "healthcare_preparation",
+    "expected_preparation_service": "general_clinic_visit",
+    "expected_risk": "low",
+    "should_answer": true
+  }
+]

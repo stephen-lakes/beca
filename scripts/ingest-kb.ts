@@ -91,6 +91,17 @@ const KbTopicSchema = z.object({
   authority_level: z.enum(["primary", "secondary"]),
   status: z.enum(["active", "draft", "retired"]),
   red_flag_linked: z.boolean(),
+  // Added in the preventive-health/preparation/navigation architecture pass
+  // (2026-08-28, see context/specs/20-capability-router-and-navigation.md).
+  // Optional, defaulting to [] — only the 7 topics added in that pass (22-28)
+  // carry it; the original 21 are deliberately not retrofitted in this pass
+  // (a larger, separate edit with no functional payoff yet — see the "Not
+  // done this pass" note below). Same as intents/keywords/example_questions
+  // before it: validated so a malformed entry fails loudly, but not
+  // persisted to kb_sources or used by retrieval — retrieval stays
+  // completely unchanged in this pass to protect the already-verified
+  // Health Education path from any regression risk.
+  capabilities: z.array(z.string().min(1)).optional().default([]),
   notes: z.string().optional().default(""),
 })
 type KbTopic = z.infer<typeof KbTopicSchema>

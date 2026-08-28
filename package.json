@@ -9,7 +9,9 @@
     "lint": "eslint",
     "ingest-kb": "tsx scripts/ingest-kb.ts",
     "seed-directory": "tsx scripts/seed-directory.ts",
-    "test-set": "tsx tests/run-test-set.ts"
+    "seed-preparation": "tsx scripts/seed-preparation.ts",
+    "test-set": "tsx tests/run-test-set.ts",
+    "capability-eval": "tsx tests/run-capability-eval.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

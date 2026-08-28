@@ -16,7 +16,13 @@
  */
 
 import type { RetrievedChunk } from "@/lib/kb/search"
-import { DIRECTORY_CATEGORIES, type PriorClarification } from "@/lib/ai/schema"
+import {
+  DIRECTORY_CATEGORIES,
+  CAPABILITIES,
+  PREPARATION_SERVICES,
+  NAVIGATION_SERVICES,
+  type PriorClarification,
+} from "@/lib/ai/schema"
 
 export interface PromptMessage {
   role: "system" | "user"
@@ -133,5 +139,48 @@ export function buildClassifierMessages(
   return [
     { role: "system", content: systemContent },
     { role: "user", content: userContent },
+  ]
+}
+
+// --- 2026-08-28: capability classifier prompt
+// (context/specs/20-capability-router-and-navigation.md) ---
+//
+// This ONLY ever runs on a message that already fell through the existing
+// safety branch in app/api/chat/route.ts — it is a routing/topic
+// classification, not a second safety mechanism (Part 4: "do not make this
+// classifier the sole safety mechanism"). It CAN still name "emergency" as a
+// capability (a second, independent signal), but the route never trusts that
+// alone the way it trusts the real urgency classifier — see route.ts.
+
+export function buildCapabilityClassifierSystemPrompt(): string {
+  return [
+    "You are a capability classifier for Beca, a health information assistant for people in Lagos, Nigeria.",
+    "A safety check has already run on this message and found no urgent red flags — your job now is only to route it, not to re-assess urgency.",
+    "",
+    "Hard rules, no exceptions:",
+    "- You never diagnose, never prescribe, never give a treatment plan. You only classify.",
+    `- capability must be exactly one of: ${CAPABILITIES.join(", ")}.`,
+    "- \"health_education\" — general questions explaining a health concept, condition, or benefit (e.g. \"What is hypertension?\", \"Why is sleep important?\").",
+    "- \"preventive_health\" — questions specifically about reducing risk or taking preventive action (e.g. \"How can I reduce my risk of diabetes?\", \"How can I prevent malaria?\") — distinct from health_education even on the same underlying topic.",
+    "- \"disease_information\" — questions specifically about a named disease's symptoms, transmission, or course (e.g. \"What are the symptoms of tuberculosis?\", \"How does cholera spread?\") — use this over health_education when the question is clearly about a specific disease's clinical picture rather than a general wellbeing concept.",
+    "- \"when_to_seek_care\" — questions asking when a non-urgent symptom or situation warrants seeing a health worker (e.g. \"When should a child's diarrhoea be seen by a doctor?\") — distinct from an actual emergency, which the safety check already would have caught.",
+    "- \"healthcare_preparation\" — questions about preparing for or what to bring to a routine healthcare appointment or service (e.g. \"What should I bring to my antenatal appointment?\", \"How do I prepare for a blood test?\"). When this is the capability, also set preparation_service.",
+    "- \"service_navigation\" — questions asking where to find or access a healthcare service or facility (e.g. \"Where can I get vaccinated?\", \"Which clinic offers antenatal care?\"). When this is the capability, also set navigation_service, and location if the user names one.",
+    "- \"medication_safety\" — general medication-safety information questions that are not a dosing or prescribing request (e.g. \"Should medicine be stored in the fridge?\") — never used to actually answer a dosing question, that stays hard-forbidden everywhere in this app.",
+    "- \"emergency\" — use only if, despite the prior safety check, this message still reads to you as describing a genuinely urgent situation. This is a rare backstop, not your default — most messages you see already passed the safety check for a reason.",
+    "- \"out_of_scope\" — not a health, health-service, or healthcare-navigation question at all.",
+    `- preparation_service, when set, must be exactly one of: ${PREPARATION_SERVICES.join(", ")}. Null for every other capability.`,
+    `- navigation_service, when set, must be exactly one of: ${NAVIGATION_SERVICES.join(", ")}. Null for every other capability.`,
+    "- risk_level is your general sense of how sensitive the topic is (\"low\" for routine education/prevention/preparation/navigation, \"medium\" for when_to_seek_care or medication_safety, \"high\" only if you chose \"emergency\") — it does not gate anything by itself, it's informational.",
+    "- topic is a short lowercase slug or phrase naming the subject (e.g. \"physical_activity\", \"diabetes\", \"antenatal_care\") or null if you can't tell. question_type is a short free-form label (e.g. \"benefits\", \"risk_reduction\", \"definition\", \"preparation\") or null.",
+    "- location is the place name the user mentioned for a service_navigation question (e.g. \"Mushin\", \"near me\"), or null if none was given or not relevant.",
+    "- reasoning is one short internal sentence — never shown to the user.",
+  ].join("\n")
+}
+
+export function buildCapabilityClassifierMessages(message: string): PromptMessage[] {
+  return [
+    { role: "system", content: buildCapabilityClassifierSystemPrompt() },
+    { role: "user", content: message },
   ]
 }

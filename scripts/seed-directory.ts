@@ -57,6 +57,13 @@ const ClinicDirectoryEntrySchema = z.object({
   area: z.string().min(1),
   contact: z.string().min(1),
   verified: z.union([z.boolean(), z.literal("name-only"), z.literal("n/a")]),
+  // 2026-08-28: directory_entries.services (supabase/migrations/0003_capabilities.sql)
+  // — service_navigation's filtering column, additive to the existing
+  // escalation `category`. Optional/defaulted so this schema still parses
+  // an older file shape; every current entry in data/clinic_directory.json
+  // sets it explicitly (inferred from category, not independently verified —
+  // see that file's entry #12 note).
+  services: z.array(z.string().min(1)).optional().default([]),
 })
 type ClinicDirectoryEntry = z.infer<typeof ClinicDirectoryEntrySchema>
 
@@ -121,6 +128,7 @@ async function insertDirectoryEntries(entries: ClinicDirectoryEntry[]): Promise<
     area: entry.area,
     contact: entry.contact,
     verified: mapVerified(entry.verified),
+    services: entry.services,
   }))
 
   const { error } = await supabase.from("directory_entries").insert(rows)

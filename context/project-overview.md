@@ -22,7 +22,7 @@ Beca is a chat-based AI assistant that answers general health and health-service
 **Must-Have (MVP)**
 
 - Single-page chat interface, no login
-- RAG Q&A over the WHO-fact-sheet knowledge base (21 topics as of the 2026-08-27 architecture-audit expansion, originally 12 at MVP lock — see `data/kb_topics.json`)
+- RAG Q&A over the WHO-fact-sheet knowledge base (28 topics as of the 2026-08-28 capability-router pass — 21 as of the 2026-08-27 architecture-audit expansion, originally 12 at MVP lock — see `data/kb_topics.json`)
 - Visible citation under every grounded answer
 - Deterministic + AI urgency classifier running on every message
 - Escalation card with a matched entry from the seed clinic directory (`data/clinic_directory.json`)
@@ -43,6 +43,7 @@ Beca is a chat-based AI assistant that answers general health and health-service
 Kept separate from the Must-Have list above so the build history stays honest about what was in the original MVP scope vs. approved afterward.
 
 - **Multi-turn triage clarification.** The urgency classifier asks up to two targeted clarifying questions, in-thread, when it can't confidently classify urgency from a single message alone. Capped at one round: if the clarifying reply still leaves genuine uncertainty, the system escalates rather than asking further questions. This deepens the existing Spec 06 classifier/escalation logic rather than introducing a new capability area, and does not conflict with the "no autonomous multi-step agent behaviour" out-of-scope line below — it's exactly one bounded, user-initiated exchange in the same pattern Journey 2 already uses (a follow-up message in the same thread re-running classification), not open-ended autonomous action.
+- **Capability router (Spec 20, 2026-08-28).** Beyond the original Health Education RAG capability, Beca now separately classifies and handles **Preventive Health Guidance** (routing-level distinct from Health Education, sharing the same RAG pipeline and evidence), **Healthcare Preparation** (a structured, deterministic checklist lookup — never vector search — for appointment/service preparation), and **Healthcare Service Navigation** (a fully deterministic `directory_entries` lookup by service, no LLM call, never inventing a facility). The capability classifier runs strictly after the existing safety layer (deterministic red-flag check + AI urgency classifier) has already cleared a message — it is a routing layer, never a second safety mechanism. See `context/specs/20-capability-router-and-navigation.md` for full detail.
 
 ## User stories
 

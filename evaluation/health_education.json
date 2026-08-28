@@ -1,0 +1,164 @@
+[
+  {
+    "question": "Why is regular physical exercise important for good health?",
+    "expected_capability": "health_education",
+    "expected_topic": "physical_activity",
+    "expected_question_type": "benefits",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "Why is getting enough sleep important?",
+    "expected_capability": "health_education",
+    "expected_topic": "sleep",
+    "expected_question_type": "benefits",
+    "expected_risk": "low",
+    "should_answer": false,
+    "notes": "Known, honest KB gap, not a bug: no sleep topic exists in data/kb_topics.json yet (no WHO fact sheet on sleep, and a candidate CDC page returned HTTP 403 during this pass's verification attempt — see progress-tracker.md Open Questions). This should correctly return the no-grounded-information refusal, not a fabricated answer."
+  },
+  {
+    "question": "What is a balanced diet?",
+    "expected_capability": "health_education",
+    "expected_topic": "healthy_diet",
+    "expected_question_type": "definition",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "Why is handwashing important?",
+    "expected_capability": "health_education",
+    "expected_topic": "sanitation",
+    "expected_question_type": "prevention",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What is hypertension?",
+    "expected_capability": "health_education",
+    "expected_topic": "hypertension",
+    "expected_question_type": "definition",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What is diabetes?",
+    "expected_capability": "health_education",
+    "expected_topic": "diabetes",
+    "expected_question_type": "definition",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "Why are vaccines important?",
+    "expected_capability": "health_education",
+    "expected_topic": "immunization",
+    "expected_question_type": "benefits",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What are the benefits of breastfeeding?",
+    "expected_capability": "health_education",
+    "expected_topic": "infant_feeding",
+    "expected_question_type": "benefits",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "Why is drinking enough water important?",
+    "expected_capability": "health_education",
+    "expected_topic": "hydration",
+    "expected_question_type": "benefits",
+    "expected_risk": "low",
+    "should_answer": false,
+    "notes": "Known, honest KB gap, deliberately not papered over — data/kb_topics.json topic #8's own notes explicitly say it covers water treatment/storage, NOT hydration/fluid-intake importance. This should correctly refuse rather than answer from the wrong topic."
+  },
+  {
+    "question": "What is malaria?",
+    "expected_capability": "health_education",
+    "expected_topic": "malaria",
+    "expected_question_type": "definition",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "Why is oral health important?",
+    "expected_capability": "health_education",
+    "expected_topic": "oral_health",
+    "expected_question_type": "benefits",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What is tuberculosis?",
+    "expected_capability": "health_education",
+    "expected_topic": "tuberculosis",
+    "expected_question_type": "definition",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What is HIV?",
+    "expected_capability": "health_education",
+    "expected_topic": "hiv",
+    "expected_question_type": "definition",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What is hepatitis B?",
+    "expected_capability": "health_education",
+    "expected_topic": "hepatitis_b",
+    "expected_question_type": "definition",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What is asthma?",
+    "expected_capability": "health_education",
+    "expected_topic": "asthma",
+    "expected_question_type": "definition",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What are noncommunicable diseases?",
+    "expected_capability": "health_education",
+    "expected_topic": "noncommunicable_diseases",
+    "expected_question_type": "definition",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What can older adults do to age healthily?",
+    "expected_capability": "health_education",
+    "expected_topic": "healthy_ageing",
+    "expected_question_type": "lifestyle",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "Why is food safety important?",
+    "expected_capability": "health_education",
+    "expected_topic": "food_safety",
+    "expected_question_type": "benefits",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "What are the different methods of family planning?",
+    "expected_capability": "health_education",
+    "expected_topic": "family_planning",
+    "expected_question_type": "definition",
+    "expected_risk": "low",
+    "should_answer": true
+  },
+  {
+    "question": "How do I care for a newborn baby?",
+    "expected_capability": "health_education",
+    "expected_topic": "newborn_care",
+    "expected_question_type": "how_it_works",
+    "expected_risk": "low",
+    "should_answer": true
+  }
+]
