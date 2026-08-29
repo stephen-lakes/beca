@@ -108,8 +108,8 @@ type KbTopic = z.infer<typeof KbTopicSchema>
 
 const KbTopicsFileSchema = z.array(KbTopicSchema)
 
-// Content for topics #8 and #12 — internally authored, source_url is null,
-// nothing to fetch. Per kb_topics.json's notes: label clearly as
+// Content for topics #8, #12, and #29 — internally authored, source_url is
+// null, nothing to fetch. Per kb_topics.json's notes: label clearly as
 // team-authored/compiled in the UI, not a cited external fact (the UI-side
 // labeling is a later spec's job, not this one).
 //
@@ -177,6 +177,52 @@ After the visit
 Keep any new prescriptions, receipts, or notes together in one place for next time.
 
 If you were told to come back or watch for specific symptoms, write those down somewhere you'll see them, like a note on your phone.`,
+
+  // Topic #29 ("Nigeria's childhood immunization schedule") — added 2026-08-29
+  // in response to a reported gap ("is my child due for vaccination?" / "what
+  // antigens at 6 months?" both refused for lack of any schedule content).
+  // Internally authored, same as #8/#12: nphcda.gov.ng returned HTTP 500 and
+  // unicef.org/nigeria returned HTTP 403 on every attempt, so this is
+  // compiled from secondary sources (Paediatric Association of Nigeria, Gavi
+  // Zero-Dose Learning Hub) plus one live-verified WHO AFRO source for the
+  // malaria vaccine dosing specifically — see kb_topics.json's own notes for
+  // this entry for the full sourcing caveat.
+  29: `Nigeria's childhood immunization schedule
+
+Nigeria's National Primary Health Care Development Agency (NPHCDA) runs a national routine immunization schedule that gives children a set of vaccines for free at government health facilities, timed to specific ages from birth through 15 months.
+
+At birth
+BCG (protects against tuberculosis), the first dose of oral polio vaccine (OPV0), and the birth dose of hepatitis B vaccine.
+
+At 6 weeks
+Oral polio vaccine dose 1 (OPV1), the first dose of pentavalent vaccine (Penta1 — combined protection against diphtheria, tetanus, pertussis, hepatitis B, and Haemophilus influenzae type b), pneumococcal conjugate vaccine dose 1 (PCV1), and rotavirus vaccine dose 1 (Rota1).
+
+At 10 weeks
+OPV2, Penta2, PCV2, and Rota2.
+
+At 14 weeks
+OPV3, Penta3, PCV3, and inactivated polio vaccine (IPV).
+
+At 5 months
+The first dose of the malaria vaccine (R21).
+
+At 6 months
+The second dose of the malaria vaccine.
+
+At 7 months
+The third dose of the malaria vaccine.
+
+At 9 months
+The first dose of measles vaccine (MCV1), yellow fever vaccine, and meningitis A conjugate vaccine.
+
+At 15 months
+The second dose of measles vaccine (MCV2) and a malaria vaccine booster dose.
+
+The malaria vaccine is a recent addition to Nigeria's routine schedule. National rollout began in December 2024 in Bayelsa and Kebbi States and is being phased in state by state through 2025 — so availability depends on where you are and when your local facility introduced it. Check with your health worker whether it's available at your clinic yet.
+
+This schedule is a general guide, not a personal record. It cannot tell you whether a specific child is up to date — only the child's own immunization card, kept by the caregiver and updated at each visit, or a health worker checking that card, can confirm that.
+
+Compiled from NPHCDA's published routine immunization schedule (via secondary reporting from the Paediatric Association of Nigeria and Gavi's Zero-Dose Learning Hub) and the WHO Regional Office for Africa's reporting on the malaria vaccine rollout — not fetched from a single live NPHCDA page (nphcda.gov.ng returned a server error on every page tried at the time this was compiled).`,
 }
 
 // ---------------------------------------------------------------------------

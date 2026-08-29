@@ -11,7 +11,7 @@
 | Embeddings | OpenAI `text-embedding-3-small` | 1536 dims (native) | KB retrieval — 1536 matches `kb_chunks.embedding vector(1536)` with no config; see `progress-tracker.md` Architecture Decisions |
 | Database | Supabase (Postgres + pgvector) | — | KB chunks, directory, red-flag rules |
 | Hosting | Vercel | — | Frontend + API routes, git-push deploys |
-| KB source | WHO fact sheets, 28 topics | — | Fetched once, ingested at build time — see `data/kb_topics.json`. Expanded 12 → 21 post-launch (architecture audit, 2026-08-27), then 21 → 28 (capability router pass, 2026-08-28) to close real KB-coverage gaps; see `progress-tracker.md`. |
+| KB source | WHO fact sheets, 29 topics | — | Fetched once, ingested at build time — see `data/kb_topics.json`. Expanded 12 → 21 post-launch (architecture audit, 2026-08-27), then 21 → 28 (capability router pass, 2026-08-28), then 28 → 29 (immunization-schedule addition, 2026-08-29) to close real KB-coverage gaps; see `progress-tracker.md`. |
 
 **Single provider, resolving the original "open decision" this section used to carry.** Generation, classification, and embeddings all run on OpenAI now — not the Anthropic-for-generation / OpenAI-for-embeddings split Spec 03–05 originally set up. Switched because no Anthropic API key is available, and this consolidates to the one provider already proven working (embeddings, since Spec 03) rather than maintaining two provider integrations for one hackathon-scale app. Full reasoning, model choice, and cost/latency comparison: `progress-tracker.md` Architecture Decisions. `lib/ai/client.ts` is still the only place the generation/classification provider is referenced (the swap stayed contained to that one file, as this section anticipated when it was still an open decision); the embedding call lives in `scripts/ingest-kb.ts` (ingestion) and `lib/kb/search.ts` (query-time embedding) — never in `lib/ai/`, which is reserved for generation/classification per `code-standards.md`.
 
@@ -34,7 +34,8 @@ beca/
 │   │                             # EscalationCard, LanguageToggle, ReadingLevelToggle,
 │   │                             # EmptyState, ErrorState, DisclaimerBar (Spec 10),
 │   │                             # Header (Spec 12), ClarificationCard (Spec 18),
-│   │                             # ServiceResultsCard (Spec 20)
+│   │                             # ServiceResultsCard (Spec 20), useAutoScroll +
+│   │                             # JumpToLatestButton (auto-scroll UX fix, 2026-08-29)
 │   └── ui/                      # shadcn primitives — do not hand-edit generated files
 ├── lib/
 │   ├── ai/                      # client.ts, prompts.ts, schema.ts, classify.ts, classify-capability.ts (Spec 20)
