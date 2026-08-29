@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useEffect, useRef, useState, type FormEvent } from "react"
 import { Send } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,8 @@ import { EmptyState } from "./EmptyState"
 import { ErrorState } from "./ErrorState"
 import { DisclaimerBar } from "./DisclaimerBar"
 import { Header } from "./Header"
+import { JumpToLatestButton } from "./JumpToLatestButton"
+import { useAutoScroll } from "./useAutoScroll"
 import {
   ChatResponseSchema,
   EscalationResponseSchema,
@@ -162,6 +164,39 @@ export function ChatThread() {
   // that append already happened.
   const [lastRecentHistory, setLastRecentHistory] = useState<ConversationTurn[]>([])
 
+  // Auto-scroll (project-owner UX report, 2026-08-29): the user's own
+  // message, the "Thinking…" indicator, and an assistant response that
+  // arrives while already at the bottom should all pull the view down
+  // without a manual scroll; a response that arrives while the user has
+  // deliberately scrolled up to reread earlier turns should not — it
+  // surfaces JumpToLatestButton instead. See useAutoScroll.ts for the full
+  // reasoning; this component only decides *when* content changed and
+  // whether that change was the user's own doing.
+  const { containerRef, endRef, hasNewContent, jumpToLatest, notifyContentChanged } = useAutoScroll()
+  // Skips the notify call that would otherwise fire on first mount (an
+  // empty thread has nothing to scroll to yet).
+  const isFirstRender = useRef(true)
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    const lastTurn = messages[messages.length - 1]
+    // "Own action" covers everything that directly follows the user
+    // submitting a message — their own bubble appearing, and the
+    // pending/error indicator that follows it — as distinct from an
+    // assistant turn arriving asynchronously once they may have scrolled
+    // away. See useAutoScroll.ts's notifyContentChanged contract.
+    const isOwnAction = status.kind === "pending" || status.kind === "error" || lastTurn?.role === "user"
+    notifyContentChanged(isOwnAction)
+    // `messages` (not messages.length) as the dep: setMessages always
+    // replaces the array via spread (never mutates in place), so its
+    // identity changes exactly when — and only when — a turn is appended,
+    // the same condition messages.length would have captured, without an
+    // exhaustive-deps lint override.
+  }, [messages, status.kind, notifyContentChanged])
+
   // Spec 10 Decision 8: extracted out of handleSubmit so both the form
   // submit and ErrorState's retry button share the exact same fetch/
   // validate/append-or-error logic (Spec 08) instead of duplicating it.
@@ -276,60 +311,81 @@ export function ChatThread() {
           layout, extending Spec 07 Decision 3's principle. */}
       <Header />
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6">
-        {/* mx-auto max-w-3xl (project-owner polish pass, post-Spec-12) —
-            caps the message column at a readable width instead of letting
-            MessageBubble's max-w-[80%] stretch to 80% of a full laptop-width
-            viewport. Same column width Header.tsx, the input form below, and
-            DisclaimerBar.tsx all now share. h-full lets EmptyState's own
-            h-full still resolve to this scroll container's real height, not
-            just its own intrinsic content height. gap-4 replaces the old
-            space-y-4 now that it lives on this inner wrapper instead of the
-            scroll container itself. */}
-        <div className="mx-auto flex h-full w-full max-w-3xl flex-col gap-4">
-          {/* Spec 10 Decision 5: closes the blank-screen gap Spec 08 Decision 4
-              deliberately left open. */}
-          {messages.length === 0 && <EmptyState />}
+      {/* Outer wrapper is the `relative` anchor for JumpToLatestButton's
+          absolute positioning below — deliberately a level above the
+          overflow-y-auto div, not on it directly, so the button floats
+          fixed over the viewport instead of scrolling away with the
+          content it's meant to jump past (project-owner UX report,
+          2026-08-29 — see useAutoScroll.ts). */}
+      <div className="relative min-h-0 flex-1">
+        <div ref={containerRef} className="h-full overflow-y-auto px-4 py-6">
+          {/* mx-auto max-w-3xl (project-owner polish pass, post-Spec-12) —
+              caps the message column at a readable width instead of letting
+              MessageBubble's max-w-[80%] stretch to 80% of a full laptop-width
+              viewport. Same column width Header.tsx, the input form below, and
+              DisclaimerBar.tsx all now share. h-full lets EmptyState's own
+              h-full still resolve to this scroll container's real height, not
+              just its own intrinsic content height. gap-4 replaces the old
+              space-y-4 now that it lives on this inner wrapper instead of the
+              scroll container itself. */}
+          <div className="mx-auto flex h-full w-full max-w-3xl flex-col gap-4">
+            {/* Spec 10 Decision 5: closes the blank-screen gap Spec 08 Decision 4
+                deliberately left open. */}
+            {messages.length === 0 && <EmptyState />}
 
-          {messages.map((turn, index) =>
-            turn.role === "user" ? (
-              <MessageBubble key={index} role="user" text={turn.text} />
-            ) : turn.escalated ? (
-              <EscalationCard key={index} response={turn} />
-            ) : turn.needs_clarification ? (
-              // Spec 18 Decision 4: escalated checked first, then
-              // needs_clarification — the two are mutually exclusive by
-              // construction (lib/ai/schema.ts), matching the discriminant
-              // order Spec 17 documented for the API response shapes.
-              <ClarificationCard key={index} response={turn} />
-            ) : turn.service_navigation ? (
-              // 2026-08-28: same pattern, checked last before the default
-              // ChatResponse bubble — the four assistant shapes are mutually
-              // exclusive by construction (lib/ai/schema.ts).
-              <ServiceResultsCard key={index} response={turn} />
-            ) : (
-              <MessageBubble key={index} {...turn} />
-            )
-          )}
+            {messages.map((turn, index) =>
+              turn.role === "user" ? (
+                <MessageBubble key={index} role="user" text={turn.text} />
+              ) : turn.escalated ? (
+                <EscalationCard key={index} response={turn} />
+              ) : turn.needs_clarification ? (
+                // Spec 18 Decision 4: escalated checked first, then
+                // needs_clarification — the two are mutually exclusive by
+                // construction (lib/ai/schema.ts), matching the discriminant
+                // order Spec 17 documented for the API response shapes.
+                <ClarificationCard key={index} response={turn} />
+              ) : turn.service_navigation ? (
+                // 2026-08-28: same pattern, checked last before the default
+                // ChatResponse bubble — the four assistant shapes are mutually
+                // exclusive by construction (lib/ai/schema.ts).
+                <ServiceResultsCard key={index} response={turn} />
+              ) : (
+                <MessageBubble key={index} {...turn} />
+              )
+            )}
 
-          {/* Trailing pending/error slot (Spec 08 Decisions 7, 8, 10) — never
-              stored inside a ChatTurn itself. aria-live announces it without a
-              manual focus move. The pending branch is untouched by Spec 10
-              (loading-state polish is explicitly Spec 12's job); the error
-              branch now renders the dedicated ErrorState component instead of
-              a bare <p> (Spec 10 Decision 6). */}
-          {status.kind !== "idle" && (
-            <div aria-live="polite" className="px-1">
-              {status.kind === "pending" && <p className="text-sm text-ink-soft">Thinking…</p>}
-              {status.kind === "error" && (
-                <ErrorState
-                  message={status.message}
-                  onRetry={() => requestAnswer(lastMessage, lastPriorClarification, lastRecentHistory)}
-                />
-              )}
-            </div>
-          )}
+            {/* Trailing pending/error slot (Spec 08 Decisions 7, 8, 10) — never
+                stored inside a ChatTurn itself. aria-live announces it without a
+                manual focus move. The pending branch is untouched by Spec 10
+                (loading-state polish is explicitly Spec 12's job); the error
+                branch now renders the dedicated ErrorState component instead of
+                a bare <p> (Spec 10 Decision 6). */}
+            {status.kind !== "idle" && (
+              <div aria-live="polite" className="px-1">
+                {status.kind === "pending" && <p className="text-sm text-ink-soft">Thinking…</p>}
+                {status.kind === "error" && (
+                  <ErrorState
+                    message={status.message}
+                    onRetry={() => requestAnswer(lastMessage, lastPriorClarification, lastRecentHistory)}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Sentinel useAutoScroll scrolls into view — placed after every
+                piece of renderable content (turns + the pending/error slot)
+                so "scroll to bottom" always means "scroll past the newest
+                thing," whichever of those it currently is. */}
+            <div ref={endRef} />
+          </div>
         </div>
+
+        {/* Shown only once new content has arrived while the user was
+            scrolled away from the bottom — see useAutoScroll.ts's
+            hasNewContent contract. A sibling of the scroll container, not a
+            child of it, so it stays fixed over the viewport instead of
+            scrolling away with the content it's meant to jump past. */}
+        {hasNewContent && <JumpToLatestButton onClick={jumpToLatest} />}
       </div>
 
       {/* Project-owner polish pass (post-Spec-12): previously a plain

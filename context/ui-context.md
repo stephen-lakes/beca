@@ -49,6 +49,7 @@ Tailwind's default spacing scale (4px base unit). No custom scale is needed at t
 - **Service results card** (Spec 20) — full width like the escalation card (it lists the same kind of directory entries), but calm, not alarming: `brand` top border, soft `brand`-tinted background, a `MapPin` icon, `role="status"` not `role="alert"`. Renders matched facilities the same way the escalation card renders `matched_entries` (name / area / contact / unconfirmed qualifier), or an honest "not on file yet" message when there are none. Never uses `urgent`/`urgent-soft` — those stay reserved for the escalation card alone. See `app-flow.md` state 7.
 - **Toggle (language / reading level)** — shadcn `Toggle` or `Switch`, always labelled, visible active state.
 - **Disclaimer bar** — persistent across every screen state, `ink-soft` text, thin top border.
+- **Jump to latest button** (auto-scroll UX fix, 2026-08-29) — floats above the input pill, only rendered once new content has arrived while the user has scrolled away from the bottom of the thread. Pill shape, `card` background, `line` border, `brand` text/icon (a downward arrow) — never `urgent`/`urgent-soft`, same rule every non-escalation control follows. 44px minimum touch target.
 
 ## Accessibility
 
