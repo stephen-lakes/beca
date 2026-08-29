@@ -600,5 +600,29 @@
     "red_flag_linked": true,
     "capabilities": ["health_education", "preventive_health", "when_to_seek_care"],
     "notes": "Added in the preventive-health/preparation/navigation architecture pass (2026-08-28). Live-fetched and confirmed (WebFetch) before this URL was committed — covers essential newborn care (thermal protection, cord/skin care) and danger signs prompting urgent care. Pairs with red_flag_rules.json's existing 'Children' category patterns for serious illness in infants."
+  },
+  {
+    "id": 29,
+    "slug": "immunization-schedule-nigeria",
+    "title": "Nigeria's childhood immunization schedule — vaccines by age",
+    "category": "vaccination",
+    "description": "Nigeria's routine childhood immunization schedule — which vaccines are given at which ages, from birth through the 15-month booster visit. Does not track any individual child's personal vaccination record or confirm whether a specific child is 'up to date' — only the child's own immunization card, or a health worker checking it, can do that.",
+    "intents": ["health_education", "when_to_seek_care", "service_navigation"],
+    "keywords": ["immunization schedule", "vaccine schedule", "child vaccination age", "6 weeks vaccine", "9 months vaccine", "antigens", "BCG", "penta", "measles vaccine", "malaria vaccine"],
+    "related_topics": ["immunization"],
+    "example_questions": [
+      "What vaccines does my baby need at birth?",
+      "What vaccines are given at 6 weeks?",
+      "What antigens should my child take at 6 months?",
+      "When is the measles vaccine given?",
+      "What is the malaria vaccine schedule for children?"
+    ],
+    "source_name": "internally authored — compiled from NPHCDA's published routine immunization schedule (via Paediatric Association of Nigeria and Gavi Zero-Dose Learning Hub secondary reporting) and WHO AFRO's R21 malaria vaccine rollout announcement",
+    "source_url": null,
+    "authority_level": "secondary",
+    "status": "active",
+    "red_flag_linked": false,
+    "capabilities": ["health_education", "when_to_seek_care"],
+    "notes": "Added 2026-08-29 in response to a reported gap: 'is my child due for vaccination?' / 'what antigens at 6 months?' both returned the no-grounded-information refusal because no immunization-schedule content existed — topic #3 ('immunization') only covers why vaccines matter generally, and its own notes already flagged a Nigeria-specific schedule as a stretch add-on never built. SOURCING CAVEAT, flagged rather than glossed over: nphcda.gov.ng returned HTTP 500 on every page tried (immunization page, NERICC page, homepage) and unicef.org/nigeria's schedule/FAQ pages returned HTTP 403 — neither could be live-verified directly, unlike this file's primary-sourced topics. The core schedule (birth through the 15-month measles booster) is corroborated identically across two independent secondary sources (Paediatric Association of Nigeria's published schedule, Gavi's Zero-Dose Learning Hub Nigeria country profile) but rests on secondary reporting, not a directly-fetched NPHCDA/WHO page — hence authority_level 'secondary', same honesty tier as topics #8/#12. The malaria vaccine dosing (5/6/7/15 months) IS live-verified via WHO AFRO's own article (https://www.afro.who.int/countries/nigeria/news/nigeria-introduces-r21-vaccine-pivotal-move-malaria-control, fetched 2026-08-29) — cited in source_name and body text rather than as source_url, since this is compiled content, not a single-page extraction (same treatment as topic #8). Malaria vaccine is a recent addition — national rollout began December 2024, phased state-by-state through 2025, so real-world availability varies by state/facility; the ingested content itself caveats this, not just this note. IMPORTANT — even with this topic added, 'is my child due for vaccination?' still cannot be answered as a personal determination: the app has no per-child record. It can only state the generic schedule; the answer should still direct the caregiver to their child's immunization card or a health worker for an actual due/overdue check. Before treating this as fully resolved: recommend one more attempt to reach nphcda.gov.ng directly (transient outage vs. permanent bot-block) or a manual-paste fallback (project owner opens the page in a browser and pastes the schedule), same as any other secondary-sourced topic pending a stronger primary source."
   }
 ]

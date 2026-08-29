@@ -22,7 +22,7 @@ Beca is a chat-based AI assistant that answers general health and health-service
 **Must-Have (MVP)**
 
 - Single-page chat interface, no login
-- RAG Q&A over the WHO-fact-sheet knowledge base (28 topics as of the 2026-08-28 capability-router pass — 21 as of the 2026-08-27 architecture-audit expansion, originally 12 at MVP lock — see `data/kb_topics.json`)
+- RAG Q&A over the WHO-fact-sheet knowledge base (29 topics as of the 2026-08-29 immunization-schedule addition — 28 as of the 2026-08-28 capability-router pass, 21 as of the 2026-08-27 architecture-audit expansion, originally 12 at MVP lock — see `data/kb_topics.json`)
 - Visible citation under every grounded answer
 - Deterministic + AI urgency classifier running on every message
 - Escalation card with a matched entry from the seed clinic directory (`data/clinic_directory.json`)
