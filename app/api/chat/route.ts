@@ -39,6 +39,16 @@
  * branch (Spec 17) before resolution ever ran, defeating the fix roughly a
  * third of the time in testing. See
  * context/specs/23-conversation-context-resolution.md Decision 1.
+ *
+ * Spec 25 adds a fifth response shape, dispatched from the capability router
+ * (2026-08-28) below: six conversational capabilities (greeting, farewell,
+ * thanks, help_request, general_conversation, out_of_scope) resolve directly
+ * to fixed, intent-keyed copy — never searchKb, never generateAnswer. Fixes a
+ * live-reproduced bug where a non-health message (e.g. "Hey Beca") fell
+ * through to the RAG flow and returned the generic NO_GROUNDED_INFO_MESSAGE,
+ * a message meant for "a health topic we don't have KB coverage for," not
+ * "this isn't a health question at all." See
+ * context/specs/25-conversational-intents-and-out-of-scope-redirect.md.
  */
 
 import { NextResponse } from "next/server"
@@ -55,6 +65,7 @@ import {
   EscalationResponseSchema,
   ClarificationResponseSchema,
   ServiceNavigationResponseSchema,
+  ConversationalResponseSchema,
   PriorClarificationSchema,
   ConversationTurnSchema,
   NO_GROUNDED_INFO_MESSAGE,
@@ -63,7 +74,15 @@ import {
   GENERATION_FAILURE_MESSAGE,
   HIGH_SEVERITY_MESSAGE,
   MEDIUM_SEVERITY_MESSAGE,
+  CONVERSATIONAL_CAPABILITIES,
+  GREETING_MESSAGE,
+  FAREWELL_MESSAGE,
+  THANKS_MESSAGE,
+  HELP_REQUEST_MESSAGE,
+  OUT_OF_SCOPE_MESSAGE,
   type DirectoryEntry,
+  type Capability,
+  type ConversationalIntent,
 } from "@/lib/ai/schema"
 
 // 2026-08-28: human-readable labels for service_navigation's fixed,
@@ -98,6 +117,30 @@ const NAVIGATION_SERVICE_LABELS: Record<string, string> = {
 // reported example precisely); a plain "a few places" for multiple, rather
 // than stitching every name into one run-on sentence that just repeats what
 // each entry's own card already shows below.
+// Spec 25 (context/specs/25-conversational-intents-and-out-of-scope-redirect.md
+// Decision 6): fixed, intent-keyed copy for CONVERSATIONAL_CAPABILITIES —
+// never LLM-generated, same reasoning as NAVIGATION_SERVICE_LABELS's own
+// comment above.
+const CONVERSATIONAL_MESSAGES: Record<ConversationalIntent, string> = {
+  greeting: GREETING_MESSAGE,
+  farewell: FAREWELL_MESSAGE,
+  thanks: THANKS_MESSAGE,
+  help_request: HELP_REQUEST_MESSAGE,
+  // Decision 2: general_conversation and out_of_scope deliberately share one
+  // message — see lib/ai/schema.ts's OUT_OF_SCOPE_MESSAGE comment.
+  general_conversation: OUT_OF_SCOPE_MESSAGE,
+  out_of_scope: OUT_OF_SCOPE_MESSAGE,
+}
+
+// Narrows Capability to ConversationalIntent so CONVERSATIONAL_MESSAGES can
+// be indexed without a cast — CONVERSATIONAL_CAPABILITIES and
+// ConversationalIntentSchema are hand-kept in sync in lib/ai/schema.ts (both
+// list exactly the same six values), the same way RAG_CAPABILITIES is
+// hand-kept in sync with CAPABILITIES elsewhere in that file.
+function isConversationalCapability(capability: Capability): capability is ConversationalIntent {
+  return (CONVERSATIONAL_CAPABILITIES as readonly Capability[]).includes(capability)
+}
+
 function buildServiceNavigationMessage(label: string, entries: DirectoryEntry[]): string {
   if (entries.length === 0) {
     return `We don't have a verified facility offering ${label} on file yet. Please check with a nearby primary health centre or the Lagos State Ministry of Health directly.`
@@ -150,6 +193,7 @@ async function buildEscalationResponse(category: string, severity: "high" | "med
     escalated: true,
     needs_clarification: false,
     service_navigation: false,
+    conversational: false,
     category,
     severity,
     message: severity === "high" ? HIGH_SEVERITY_MESSAGE : MEDIUM_SEVERITY_MESSAGE,
@@ -265,6 +309,7 @@ export async function POST(request: Request) {
       escalated: false,
       needs_clarification: true,
       service_navigation: false,
+      conversational: false,
       questions: aiClassification!.clarifying_questions,
     })
 
@@ -311,6 +356,28 @@ export async function POST(request: Request) {
     return NextResponse.json(escalationResponse, { status: 200 })
   }
 
+  // Spec 25 (context/specs/25-conversational-intents-and-out-of-scope-redirect.md
+  // Decision 6): the six conversational capabilities — never searchKb, never
+  // generateAnswer, never a directory lookup. This is the cheapest possible
+  // response path in the app, by design: fixed, intent-keyed copy only.
+  if (isConversationalCapability(capability)) {
+    console.log(
+      "retrieval_outcome: conversational — message length:",
+      message.length,
+      "intent:",
+      capability,
+    )
+    const conversationalResponse = ConversationalResponseSchema.parse({
+      escalated: false,
+      needs_clarification: false,
+      service_navigation: false,
+      conversational: true,
+      intent: capability,
+      message: CONVERSATIONAL_MESSAGES[capability],
+    })
+    return NextResponse.json(conversationalResponse, { status: 200 })
+  }
+
   // service_navigation (Part 2 Capability 4 / Part 18): entirely
   // deterministic from here — findByService queries the structured
   // directory_entries table, and the response is built from its result with
@@ -335,6 +402,7 @@ export async function POST(request: Request) {
       escalated: false,
       needs_clarification: false,
       service_navigation: true,
+      conversational: false,
       service,
       message: buildServiceNavigationMessage(label, matchedEntries),
       matched_entries: matchedEntries,
@@ -437,6 +505,7 @@ export async function POST(request: Request) {
         escalated: false,
         needs_clarification: false,
         service_navigation: false,
+        conversational: false,
         grounded: false,
         answer: NO_GROUNDED_INFO_MESSAGE,
         citations: [],

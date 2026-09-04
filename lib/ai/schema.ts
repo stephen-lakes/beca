@@ -39,6 +39,11 @@ export const ChatResponseSchema = z.object({
   // distinguishes it from ClarificationResponseSchema. See
   // context/specs/20-capability-router-and-navigation.md.
   service_navigation: z.literal(false),
+  // Spec 25: always false on this path — distinguishes this shape from
+  // ConversationalResponseSchema below the same way the other three literals
+  // above distinguish it from their own shapes. See
+  // context/specs/25-conversational-intents-and-out-of-scope-redirect.md.
+  conversational: z.literal(false),
   // false when the provided context doesn't adequately answer the specific
   // question — distinct from the deterministic zero-retrieval short-circuit
   // in lib/kb/search.ts (see context/specs/05-rag-chat-api.md Decision 3).
@@ -174,6 +179,9 @@ export const EscalationResponseSchema = z.object({
   // 2026-08-28: same reasoning again for service_navigation — see
   // ChatResponseSchema's comment above.
   service_navigation: z.literal(false),
+  // Spec 25: same reasoning again for conversational — see
+  // ChatResponseSchema's comment above.
+  conversational: z.literal(false),
   category: z.string(),
   severity: z.enum(["high", "medium"]),
   message: z.string(),
@@ -200,6 +208,10 @@ export const MEDIUM_SEVERITY_MESSAGE = "This should be checked by a health worke
 // still name it — a second, independent signal is a safety net, not a
 // replacement for the real one), but it is never the *sole* trigger for
 // escalation copy — see the route's handling.
+// Spec 25: five new conversational-intent values, plus the pre-existing
+// out_of_scope, which moves OUT of RAG_CAPABILITIES below — see
+// context/specs/25-conversational-intents-and-out-of-scope-redirect.md.
+// None of these six ever reach searchKb/generateAnswer.
 export const CAPABILITIES = [
   "health_education",
   "preventive_health",
@@ -210,6 +222,11 @@ export const CAPABILITIES = [
   "medication_safety",
   "emergency",
   "out_of_scope",
+  "greeting",
+  "farewell",
+  "thanks",
+  "help_request",
+  "general_conversation",
 ] as const
 export const CapabilitySchema = z.enum(CAPABILITIES)
 export type Capability = z.infer<typeof CapabilitySchema>
@@ -221,12 +238,31 @@ export type Capability = z.infer<typeof CapabilitySchema>
 // retrieval mechanics with health_education — see the audit's Part J for why
 // this is an honest, deliberate scoping choice, not a shortcut hidden from
 // the docs.
+//
+// Spec 25: out_of_scope removed from this list — it previously fell through
+// to searchKb, which correctly found nothing and returned
+// NO_GROUNDED_INFO_MESSAGE, a message that reads like a KB-coverage gap
+// rather than "this isn't a health question at all." It now dispatches
+// directly to ConversationalResponseSchema below, alongside the five new
+// conversational intents, none of which were ever in this list.
 export const RAG_CAPABILITIES = [
   "health_education",
   "preventive_health",
   "disease_information",
   "when_to_seek_care",
   "medication_safety",
+] as const satisfies readonly Capability[]
+
+// Spec 25: capabilities dispatched directly to ConversationalResponseSchema
+// (app/api/chat/route.ts) — never searchKb/generateAnswer, never a directory
+// lookup. See context/specs/25-conversational-intents-and-out-of-scope-redirect.md
+// Decision 6.
+export const CONVERSATIONAL_CAPABILITIES = [
+  "greeting",
+  "farewell",
+  "thanks",
+  "help_request",
+  "general_conversation",
   "out_of_scope",
 ] as const satisfies readonly Capability[]
 
@@ -312,6 +348,9 @@ export const ServiceNavigationResponseSchema = z.object({
   escalated: z.literal(false),
   needs_clarification: z.literal(false),
   service_navigation: z.literal(true),
+  // Spec 25: same reasoning again for conversational — see
+  // ChatResponseSchema's comment above.
+  conversational: z.literal(false),
   service: NavigationServiceSchema,
   message: z.string(),
   matched_entries: z.array(DirectoryEntrySchema),
@@ -333,6 +372,9 @@ export const ClarificationResponseSchema = z.object({
   // 2026-08-28: same reasoning again — see ChatResponseSchema's comment
   // above.
   service_navigation: z.literal(false),
+  // Spec 25: same reasoning again for conversational — see
+  // ChatResponseSchema's comment above.
+  conversational: z.literal(false),
   questions: z.array(z.string().min(1)).min(1).max(2),
 })
 export type ClarificationResponse = z.infer<typeof ClarificationResponseSchema>
@@ -357,8 +399,9 @@ export type PriorClarification = z.infer<typeof PriorClarificationSchema>
 // stateless-server contract PriorClarificationSchema above already
 // established: nothing here is ever persisted, only read from the incoming
 // request. Assistant turns are flattened to plain text by the client
-// (Spec 24) regardless of which of the four response shapes produced them —
-// this module doesn't care which shape a turn came from, only its text.
+// (Spec 24) regardless of which response shape produced them (five as of
+// Spec 25 — see ConversationalResponseSchema below) — this module doesn't
+// care which shape a turn came from, only its text.
 export const ConversationTurnSchema = z.object({
   role: z.enum(["user", "assistant"]),
   text: z.string().min(1).max(2000),
@@ -378,3 +421,57 @@ export const ResolvedContextSchema = z.object({
   reasoning: z.string(),
 })
 export type ResolvedContext = z.infer<typeof ResolvedContextSchema>
+
+// --- Spec 25: conversational intents + out-of-scope redirect ---
+// context/specs/25-conversational-intents-and-out-of-scope-redirect.md
+//
+// The fifth possible /api/chat response shape, alongside ChatResponseSchema,
+// EscalationResponseSchema, ClarificationResponseSchema, and
+// ServiceNavigationResponseSchema above. Dispatched for the six
+// CONVERSATIONAL_CAPABILITIES values — never searchKb, never generateAnswer,
+// never a directory lookup. `conversational: true` alone distinguishes this
+// shape, the same way `service_navigation: true` alone distinguishes
+// ServiceNavigationResponseSchema (Decision 4).
+
+export const ConversationalIntentSchema = z.enum([
+  "greeting",
+  "farewell",
+  "thanks",
+  "help_request",
+  "general_conversation",
+  "out_of_scope",
+])
+export type ConversationalIntent = z.infer<typeof ConversationalIntentSchema>
+
+export const ConversationalResponseSchema = z.object({
+  escalated: z.literal(false),
+  needs_clarification: z.literal(false),
+  service_navigation: z.literal(false),
+  conversational: z.literal(true),
+  intent: ConversationalIntentSchema,
+  message: z.string(),
+})
+export type ConversationalResponse = z.infer<typeof ConversationalResponseSchema>
+
+// Fixed, intent-keyed copy — never LLM-generated (Decision 1, same reasoning
+// as HIGH_SEVERITY_MESSAGE/MEDIUM_SEVERITY_MESSAGE and the service-navigation
+// copy: no factual/clinical content to get wrong, so a hand-written constant
+// is strictly safer than a generation call, and matches the pattern every
+// other non-RAG response in this app already uses).
+export const GREETING_MESSAGE =
+  "Hi! I'm Beca 👋 I'm here to help with reliable healthcare and wellness information. You can ask me about vaccines, common illnesses, nutrition, hygiene, family planning, mental health, or preparing for a clinic visit. What would you like to know?"
+
+export const FAREWELL_MESSAGE =
+  "You're welcome! Take care, and feel free to come back anytime you have a healthcare question."
+
+export const THANKS_MESSAGE = "You're very welcome! I'm here whenever you need reliable healthcare information."
+
+export const HELP_REQUEST_MESSAGE =
+  "I can help with reliable healthcare and wellness information — things like vaccines, common illnesses, nutrition, hygiene, family planning, mental health, or preparing for a clinic visit. I can also point you to a nearby facility for a service you need, or let you know if something you describe sounds urgent enough to see a health worker now. What would you like to know?"
+
+// Decision 2: general_conversation and out_of_scope deliberately share this
+// one message — the practical UX difference between aimless chat and a real
+// off-topic request doesn't warrant separate copy, and it avoids asking the
+// capability classifier to draw a low-stakes, genuinely blurry line reliably.
+export const OUT_OF_SCOPE_MESSAGE =
+  "I'm mainly here to help with healthcare and wellness information. I can help with topics like vaccines, common illnesses, nutrition, hygiene, mental health, family planning, or preparing for a clinic visit. What would you like to know?"

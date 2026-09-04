@@ -77,6 +77,14 @@ const ChatApiResponseSchema = z.object({
   category: z.string().optional(),
   severity: z.string().optional(),
   matched_entries: z.array(z.unknown()).optional(),
+  // Spec 25: the 5 existing "refused" fixture queries (smartphone, taxes,
+  // recipe, resignation letter, weather) are genuinely out_of_scope and now
+  // dispatch to ConversationalResponseSchema instead of ChatResponseSchema —
+  // see context/specs/25-conversational-intents-and-out-of-scope-redirect.md
+  // Decision 7. Optional so this schema still accepts the pre-existing
+  // ChatResponseSchema-shaped refusal too (grounded: false), not just the new
+  // shape — classify() below checks for either.
+  conversational: z.boolean().optional(),
 })
 
 // ---------------------------------------------------------------------------
@@ -103,11 +111,17 @@ function classify(testQuery: TestQuery, response: z.infer<typeof ChatApiResponse
   }
 
   if (testQuery.category === "refused") {
-    const pass =
-      response.escalated === false &&
-      response.grounded === false &&
-      !!response.simple_version &&
-      !!response.pidgin_version
+    // Spec 25: a "refused" query now legitimately resolves one of two ways —
+    // the pre-existing ChatResponseSchema-shaped refusal (grounded: false,
+    // with simple_version/pidgin_version), for an in-scope health topic with
+    // no KB coverage, or the new ConversationalResponseSchema-shaped
+    // out_of_scope redirect (conversational: true, no simple_version/
+    // pidgin_version at all — Decision 4), for a genuinely off-topic
+    // request. Both are a correct refusal; this script doesn't care which.
+    const groundedRefusal =
+      response.grounded === false && !!response.simple_version && !!response.pidgin_version
+    const conversationalRefusal = response.conversational === true
+    const pass = response.escalated === false && (groundedRefusal || conversationalRefusal)
     return { pass, reason: pass ? "correctly refused (no grounded info)" : "expected a refusal, not a grounded answer", categoryMatch: "n/a" }
   }
 
