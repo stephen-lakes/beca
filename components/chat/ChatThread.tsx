@@ -9,6 +9,7 @@ import { MessageBubble } from "./MessageBubble"
 import { EscalationCard } from "./EscalationCard"
 import { ClarificationCard } from "./ClarificationCard"
 import { ServiceResultsCard } from "./ServiceResultsCard"
+import { ConversationalReplyBubble } from "./ConversationalReplyBubble"
 import { EmptyState } from "./EmptyState"
 import { ErrorState } from "./ErrorState"
 import { DisclaimerBar } from "./DisclaimerBar"
@@ -20,10 +21,12 @@ import {
   EscalationResponseSchema,
   ClarificationResponseSchema,
   ServiceNavigationResponseSchema,
+  ConversationalResponseSchema,
   type ChatResponse,
   type EscalationResponse,
   type ClarificationResponse,
   type ServiceNavigationResponse,
+  type ConversationalResponse,
   type PriorClarification,
   type ConversationTurn,
 } from "@/lib/ai/schema"
@@ -38,13 +41,18 @@ import {
 // narrows on escalated. 2026-08-28: gained a fourth assistant member,
 // ServiceNavigationResponse (context/specs/20-capability-router-and-navigation.md)
 // — distinguished by its own service_navigation: true literal, checked after
-// escalated/needs_clarification, same pattern.
+// escalated/needs_clarification, same pattern. Spec 26: gained a fifth
+// assistant member, ConversationalResponse (context/specs/25-conversational-intents-and-out-of-scope-redirect.md,
+// context/specs/26-conversational-intents-ui.md) — distinguished by its own
+// conversational: true literal, checked after service_navigation, same
+// pattern.
 type ChatTurn =
   | { role: "user"; text: string }
   | ({ role: "assistant" } & ChatResponse)
   | ({ role: "assistant" } & EscalationResponse)
   | ({ role: "assistant" } & ClarificationResponse)
   | ({ role: "assistant" } & ServiceNavigationResponse)
+  | ({ role: "assistant" } & ConversationalResponse)
 
 // Spec 18 Decision 7: derives the follow-up context from the thread's own
 // state rather than any new persistence — the server is still fully
@@ -84,9 +92,10 @@ const HISTORY_WINDOW = 6
 // Spec 24: flattens one ChatTurn down to the minimal {role, text} shape
 // lib/ai/schema.ts's ConversationTurnSchema expects. Same discriminant
 // order the per-turn render branch below already uses (escalated →
-// needs_clarification → service_navigation → plain ChatResponse) — the
+// needs_clarification → service_navigation → conversational → plain
+// ChatResponse, Spec 26 added the conversational step) — the
 // context-resolution classifier (lib/ai/resolve-context.ts) only cares
-// about a turn's user-facing text, never which of the four response shapes
+// about a turn's user-facing text, never which of the five response shapes
 // produced it.
 function toConversationTurn(turn: ChatTurn): ConversationTurn {
   if (turn.role === "user") {
@@ -98,7 +107,9 @@ function toConversationTurn(turn: ChatTurn): ConversationTurn {
       ? turn.questions.join(" ")
       : turn.service_navigation
         ? turn.message
-        : turn.answer
+        : turn.conversational
+          ? turn.message
+          : turn.answer
   return { role: "assistant", text }
 }
 
@@ -245,7 +256,8 @@ export function ChatThread() {
       // Decision 5: extended from a 2-way to a 3-way check, same
       // discriminant order lib/ai/schema.ts documents (escalated first,
       // then needs_clarification). 2026-08-28: extended to a 4-way check —
-      // service_navigation checked last, before falling to the default
+      // service_navigation checked next. Spec 26: extended to a 5-way check —
+      // conversational checked last, before falling to the default
       // ChatResponse shape, same discriminant order lib/ai/schema.ts
       // documents for it.
       const parsed = json.escalated
@@ -254,7 +266,9 @@ export function ChatThread() {
           ? ClarificationResponseSchema.safeParse(json)
           : json.service_navigation
             ? ServiceNavigationResponseSchema.safeParse(json)
-            : ChatResponseSchema.safeParse(json)
+            : json.conversational
+              ? ConversationalResponseSchema.safeParse(json)
+              : ChatResponseSchema.safeParse(json)
 
       if (!parsed.success) {
         console.error("Received a response that failed client-side re-validation:", json, parsed.error)
@@ -345,10 +359,13 @@ export function ChatThread() {
                 // order Spec 17 documented for the API response shapes.
                 <ClarificationCard key={index} response={turn} />
               ) : turn.service_navigation ? (
-                // 2026-08-28: same pattern, checked last before the default
-                // ChatResponse bubble — the four assistant shapes are mutually
-                // exclusive by construction (lib/ai/schema.ts).
+                // 2026-08-28: same pattern, checked next.
                 <ServiceResultsCard key={index} response={turn} />
+              ) : turn.conversational ? (
+                // Spec 26: same pattern, checked last before the default
+                // ChatResponse bubble — all five assistant shapes are
+                // mutually exclusive by construction (lib/ai/schema.ts).
+                <ConversationalReplyBubble key={index} response={turn} />
               ) : (
                 <MessageBubble key={index} {...turn} />
               )

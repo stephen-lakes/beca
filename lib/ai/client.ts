@@ -125,6 +125,10 @@ async function requestStructuredAnswer(query: string, chunks: RetrievedChunk[]):
     // ServiceNavigationResponseSchema — this path never does navigation
     // lookups, that's app/api/chat/route.ts's job.
     service_navigation: false,
+    // Spec 25: same reasoning again, distinguishing from
+    // ConversationalResponseSchema — this path never dispatches a
+    // conversational reply, that's app/api/chat/route.ts's job.
+    conversational: false,
     grounded: parsed.grounded,
     answer: parsed.answer,
     citations,
